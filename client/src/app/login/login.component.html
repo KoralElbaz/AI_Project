@@ -1,0 +1,92 @@
+<div class="login-container">
+  <!-- Discount Brand Elements -->
+  <div class="discount-brand">
+    <div class="discount-logo">
+      <div class="discount-text">דיסקונט</div>
+      <div class="discount-subtitle">רוצים אותך יותר</div>
+    </div>
+    <img src="assets/icons/icon_login.png" alt="YellowIcon" />
+  </div>
+    
+  <div class="login-layout">
+    <!-- Login Panel - Left Side -->
+    <div class="login-panel">
+      <div class="login-header">
+        <a href="#" class="back-link">לדף הבית <</a>
+        <h1 class="login-title">לקוחות פרטיים</h1>
+        <p class="required-fields">* כל השדות הם שדות חובה</p>
+      </div>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form" novalidate>
+        <div class="form-group">
+          <label for="idNumber" class="form-label">מספר זהות *</label>
+          <input
+            type="text"
+            id="idNumber"
+            formControlName="idNumber"
+            class="form-input"
+            [class.error]="isFieldInvalid('idNumber')"
+            placeholder=""
+            maxlength="9"
+            dir="ltr"
+          />
+          <div class="error-message" *ngIf="getFieldError('idNumber')">
+            {{ getFieldError('idNumber') }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="password" class="form-label">סיסמה *</label>
+          <input
+            type="password"
+            id="password"
+            formControlName="password"
+            class="form-input"
+            [class.error]="isFieldInvalid('password')"
+            placeholder=""
+          />
+          <div class="error-message" *ngIf="getFieldError('password')">
+            {{ getFieldError('password') }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="identifierCode" class="form-label">קוד מזהה *</label>
+          <input
+            type="text"
+            id="identifierCode"
+            formControlName="identifierCode"
+            class="form-input"
+            [class.error]="isFieldInvalid('identifierCode')"
+            placeholder=""
+            dir="ltr"
+          />
+          <div class="error-message" *ngIf="getFieldError('identifierCode')">
+            {{ getFieldError('identifierCode') }}
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button
+            type="submit"
+            class="login-button"
+            [disabled]="!loginForm.valid || isSubmitting"
+            [class.loading]="isSubmitting"
+          >
+            <span *ngIf="!isSubmitting">כניסה</span>
+            <span *ngIf="isSubmitting" class="loading-spinner">
+              <span class="spinner"></span>
+              מתחבר...
+            </span>
+          </button>
+        </div>
+      </form>
+
+      <div class="login-footer">
+        <a href="#" class="forgot-link">נחסמתי / שכחתי סיסמה <</a>
+        <a href="#" class="forgot-link">שכחתי קוד מזהה <</a>
+      </div>
+    </div>
+
+  </div>
+</div>
