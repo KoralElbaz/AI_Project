@@ -10,7 +10,62 @@
       <p>כעת תוכל לגשת לכל הפונקציות של המערכת</p>
       
       <div class="action-buttons">
+        <button 
+          class="btn btn-success" 
+          (click)="loadContacts()" 
+          [disabled]="isLoading"
+          *ngIf="!showContacts">
+          <span *ngIf="!isLoading">הצג אנשי קשר</span>
+          <span *ngIf="isLoading">טוען...</span>
+        </button>
+        
+        <button 
+          class="btn btn-secondary" 
+          (click)="hideContacts()" 
+          *ngIf="showContacts">
+          הסתר אנשי קשר
+        </button>
+        
         <button class="btn btn-primary" (click)="logout()">התנתקות</button>
+      </div>
+    </div>
+
+    <!-- רשימת אנשי הקשר -->
+    <div class="contacts-section" *ngIf="showContacts">
+      <div class="contacts-card">
+        <h3>אנשי קשר</h3>
+        
+        <!-- הודעת שגיאה -->
+        <div class="error-message" *ngIf="error">
+          <p>{{ error }}</p>
+        </div>
+        
+        <!-- אינדיקטור טעינה -->
+        <div class="loading-message" *ngIf="isLoading">
+          <p>טוען אנשי קשר...</p>
+        </div>
+        
+        <!-- רשימת אנשי הקשר -->
+        <div class="contacts-list" *ngIf="!isLoading && !error && contacts.length > 0">
+          <div class="contact-item" *ngFor="let contact of contacts">
+            <div class="contact-info">
+              <div class="contact-name">{{ contact.name }}</div>
+              <div class="contact-details">
+                <span class="contact-phone">📞 {{ contact.phone }}</span>
+                <span class="contact-email" *ngIf="contact.email">📧 {{ contact.email }}</span>
+                <span class="contact-address" *ngIf="contact.address">📍 {{ contact.address }}</span>
+              </div>
+            </div>
+            <div class="contact-meta">
+              <small>נוצר: {{ contact.created_at | date:'dd/MM/yyyy' }}</small>
+            </div>
+          </div>
+        </div>
+        
+        <!-- הודעת אין אנשי קשר -->
+        <div class="no-contacts" *ngIf="!isLoading && !error && contacts.length === 0">
+          <p>לא נמצאו אנשי קשר</p>
+        </div>
       </div>
     </div>
   </div>
