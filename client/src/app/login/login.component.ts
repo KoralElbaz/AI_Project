@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -13,7 +14,7 @@ export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
   isSubmitting = false;
 
-  constructor(private fb: FormBuilder) {}
+  constructor(private fb: FormBuilder, private router: Router) {}
 
   ngOnInit(): void {
     this.initializeForm();
@@ -51,7 +52,8 @@ export class LoginComponent implements OnInit {
       // סימולציה של תהליך הלוגין
       setTimeout(() => {
         this.isSubmitting = false;
-        // כאן תוכל להוסיף הפניה לדף הבא או הודעת הצלחה
+        // מעבר לדף הבית לאחר כניסה מוצלחת
+        this.router.navigate(['/home']);
       }, 2000);
     } else {
       this.markFormGroupTouched();
