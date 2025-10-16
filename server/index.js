@@ -1,23 +1,23 @@
 const express = require('express');
+const cors = require('cors');
+const { db } = require('./database');
 const app = express();
 const port = 3000;
 
 // Middleware להפעלת CORS
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  
-  // טיפול ב-OPTIONS request
-  if (req.method === 'OPTIONS') {
-    res.sendStatus(200);
-  } else {
-    next();
-  }
-});
+app.use(cors({
+  origin: 'http://localhost:4200', // Angular development server
+  credentials: true
+}));
 
 // Middleware לפענוח JSON
 app.use(express.json());
+
+// Import routes
+const contactsRouter = require('./routes/contacts');
+
+// Routes
+app.use('/api/contacts', contactsRouter);
 
 app.get('/api/hello', (req, res) => {
   console.log('Received GET request to /api/hello');
@@ -30,6 +30,20 @@ app.get('/', (req, res) => {
   res.json({ status: 'Server is running!', timestamp: new Date().toISOString() });
 });
 
+// Graceful shutdown
+process.on('SIGINT', () => {
+  console.log('\nReceived SIGINT. Shutting down gracefully...');
+  db.close((err) => {
+    if (err) {
+      console.error('Error closing database:', err.message);
+    } else {
+      console.log('Database connection closed.');
+    }
+    process.exit(0);
+  });
+});
+
 app.listen(port, () => {
-  console.log(`Server listening at http://localhost:${port}`);
+  console.log(`🚀 Server listening at http://localhost:${port}`);
+  console.log(`📊 Contacts API available at http://localhost:${port}/api/contacts`);
 });
