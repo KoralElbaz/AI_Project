@@ -60,6 +60,3 @@ export interface NewResponse {
 }
 ```
 
-
-
-
