@@ -10,23 +10,39 @@
       <p>כעת תוכל לגשת לכל הפונקציות של המערכת</p>
       
       <div class="action-buttons">
-        <button 
-          class="btn btn-success" 
-          (click)="loadContacts()" 
-          [disabled]="isLoading"
-          *ngIf="!showContacts">
-          <span *ngIf="!isLoading">הצג אנשי קשר</span>
-          <span *ngIf="isLoading">טוען...</span>
-        </button>
+        <!-- כפתורי ניהול שקים -->
+        <div class="check-management-buttons">
+          <button class="btn btn-primary" (click)="navigateToOutgoingChecks()">
+            שקים יוצאים
+          </button>
+          <button class="btn btn-success" (click)="navigateToIncomingChecks()">
+            שקים נכנסים
+          </button>
+          <button class="btn btn-info" (click)="navigateToCreateCheck()">
+            צור שק דיגיטלי
+          </button>
+        </div>
         
-        <button 
-          class="btn btn-secondary" 
-          (click)="hideContacts()" 
-          *ngIf="showContacts">
-          הסתר אנשי קשר
-        </button>
+        <!-- כפתורי אנשי קשר -->
+        <div class="contacts-buttons">
+          <button 
+            class="btn btn-secondary" 
+            (click)="loadContacts()" 
+            [disabled]="isLoading"
+            *ngIf="!showContacts">
+            <span *ngIf="!isLoading">הצג אנשי קשר</span>
+            <span *ngIf="isLoading">טוען...</span>
+          </button>
+          
+          <button 
+            class="btn btn-secondary" 
+            (click)="hideContacts()" 
+            *ngIf="showContacts">
+            הסתר אנשי קשר
+          </button>
+        </div>
         
-        <button class="btn btn-primary" (click)="logout()">התנתקות</button>
+        <button class="btn btn-danger" (click)="logout()">התנתקות</button>
       </div>
     </div>
 

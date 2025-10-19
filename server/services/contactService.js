@@ -6,7 +6,7 @@ class ContactService {
   static getAllContacts() {
     return new Promise((resolve, reject) => {
       const query = `
-        SELECT id, name, phone, email, address, created_at, updated_at 
+        SELECT id, name, type, id_number, phone, email, bank_name, bank_branch, account_number, proxy, is_active, created_at, updated_at 
         FROM contacts 
         ORDER BY name ASC
       `;
@@ -26,7 +26,7 @@ class ContactService {
   static getContactById(id) {
     return new Promise((resolve, reject) => {
       const query = `
-        SELECT id, name, phone, email, address, created_at, updated_at 
+        SELECT id, name, type, id_number, phone, email, bank_name, bank_branch, account_number, proxy, is_active, created_at, updated_at 
         FROM contacts 
         WHERE id = ?
       `;
@@ -45,7 +45,7 @@ class ContactService {
   // יצירת איש קשר חדש
   static createContact(contactData) {
     return new Promise((resolve, reject) => {
-      const { name, phone, email, address } = contactData;
+      const { name, type, id_number, phone, email, bank_name, bank_branch, account_number, proxy } = contactData;
       
       // בדיקת תקינות נתונים
       if (!name || !phone) {
@@ -54,11 +54,11 @@ class ContactService {
       }
 
       const query = `
-        INSERT INTO contacts (name, phone, email, address) 
-        VALUES (?, ?, ?, ?)
+        INSERT INTO contacts (name, type, id_number, phone, email, bank_name, bank_branch, account_number, proxy) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
       
-      db.run(query, [name, phone, email || null, address || null], function(err) {
+      db.run(query, [name, type || 'customer', id_number || null, phone, email || null, bank_name || null, bank_branch || null, account_number || null, proxy || null], function(err) {
         if (err) {
           console.error('Error creating contact:', err.message);
           reject(err);
@@ -75,7 +75,7 @@ class ContactService {
   // עדכון איש קשר
   static updateContact(id, contactData) {
     return new Promise((resolve, reject) => {
-      const { name, phone, email, address } = contactData;
+      const { name, type, id_number, phone, email, bank_name, bank_branch, account_number, proxy } = contactData;
       
       // בדיקת תקינות נתונים
       if (!name || !phone) {
@@ -85,11 +85,11 @@ class ContactService {
 
       const query = `
         UPDATE contacts 
-        SET name = ?, phone = ?, email = ?, address = ?, updated_at = CURRENT_TIMESTAMP 
+        SET name = ?, type = ?, id_number = ?, phone = ?, email = ?, bank_name = ?, bank_branch = ?, account_number = ?, proxy = ?, updated_at = CURRENT_TIMESTAMP 
         WHERE id = ?
       `;
       
-      db.run(query, [name, phone, email || null, address || null, id], function(err) {
+      db.run(query, [name, type || 'customer', id_number || null, phone, email || null, bank_name || null, bank_branch || null, account_number || null, proxy || null, id], function(err) {
         if (err) {
           console.error('Error updating contact:', err.message);
           reject(err);
@@ -127,7 +127,7 @@ class ContactService {
   static searchContacts(searchTerm) {
     return new Promise((resolve, reject) => {
       const query = `
-        SELECT id, name, phone, email, address, created_at, updated_at 
+        SELECT id, name, type, id_number, phone, email, bank_name, bank_branch, account_number, proxy, is_active, created_at, updated_at 
         FROM contacts 
         WHERE name LIKE ? OR phone LIKE ? OR email LIKE ?
         ORDER BY name ASC

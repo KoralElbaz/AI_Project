@@ -59,4 +59,17 @@ export class HomeComponent {
     // מעבר חזרה לדף הכניסה
     this.router.navigate(['/login']);
   }
+
+  // ניווט למסכים החדשים
+  navigateToOutgoingChecks(): void {
+    this.router.navigate(['/outgoing-checks']);
+  }
+
+  navigateToIncomingChecks(): void {
+    this.router.navigate(['/incoming-checks']);
+  }
+
+  navigateToCreateCheck(): void {
+    this.router.navigate(['/create-check']);
+  }
 }

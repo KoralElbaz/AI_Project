@@ -15,9 +15,15 @@ app.use(express.json());
 
 // Import routes
 const contactsRouter = require('./routes/contacts');
+const outgoingChecksRouter = require('./routes/outgoing-checks');
+const incomingChecksRouter = require('./routes/incoming-checks');
+const dashboardRouter = require('./routes/dashboard');
 
 // Routes
 app.use('/api/contacts', contactsRouter);
+app.use('/api/outgoing-checks', outgoingChecksRouter);
+app.use('/api/incoming-checks', incomingChecksRouter);
+app.use('/api/dashboard', dashboardRouter);
 
 app.get('/api/hello', (req, res) => {
   console.log('Received GET request to /api/hello');

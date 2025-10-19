@@ -1,0 +1,118 @@
+<div class="outgoing-checks-container">
+  <div class="header">
+    <h2>שקים יוצאים</h2>
+    <button class="btn btn-primary" (click)="createNewCheck()">שק יוצא חדש</button>
+  </div>
+
+  <!-- פילטרים -->
+  <div class="filters-section">
+    <div class="filters-grid">
+      <div class="filter-group">
+        <label>סטטוס:</label>
+        <select [(ngModel)]="filters.status" (change)="applyFilters()">
+          <option *ngFor="let status of statuses" [value]="status.value">
+            {{ status.label }}
+          </option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>מוטב:</label>
+        <select [(ngModel)]="filters.payee_id" (change)="applyFilters()">
+          <option value="">הכל</option>
+          <option *ngFor="let contact of contacts" [value]="contact.id">
+            {{ contact.name }}
+          </option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>מתאריך:</label>
+        <input type="date" [(ngModel)]="filters.start_date" (change)="applyFilters()">
+      </div>
+
+      <div class="filter-group">
+        <label>עד תאריך:</label>
+        <input type="date" [(ngModel)]="filters.end_date" (change)="applyFilters()">
+      </div>
+
+      <div class="filter-group">
+        <label>סכום מינימלי:</label>
+        <input type="number" [(ngModel)]="filters.min_amount" (change)="applyFilters()" placeholder="0">
+      </div>
+
+      <div class="filter-group">
+        <label>סכום מקסימלי:</label>
+        <input type="number" [(ngModel)]="filters.max_amount" (change)="applyFilters()" placeholder="999999">
+      </div>
+
+      <div class="filter-group">
+        <label>מיון:</label>
+        <select [(ngModel)]="filters.sort" (change)="applyFilters()">
+          <option value="created_at">תאריך יצירה</option>
+          <option value="due_date">תאריך פירעון</option>
+          <option value="amount">סכום</option>
+        </select>
+      </div>
+
+      <div class="filter-actions">
+        <button class="btn btn-secondary" (click)="clearFilters()">נקה פילטרים</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- טבלת שקים -->
+  <div class="checks-table-container">
+    <div *ngIf="loading" class="loading">טוען שקים...</div>
+    <div *ngIf="error" class="error">{{ error }}</div>
+
+    <table *ngIf="!loading && !error" class="checks-table">
+      <thead>
+        <tr>
+          <th>מספר שק</th>
+          <th>מוטב</th>
+          <th>סכום</th>
+          <th>תאריך פירעון</th>
+          <th>סטטוס</th>
+          <th>פעולות</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let check of checks" [class]="getRowClass(check)">
+          <td>
+            {{ check.check_number }}
+            <span *ngIf="check.is_series" class="series-indicator" title="שק חוזר">
+              🔄
+            </span>
+            <span *ngIf="check.is_physical" class="physical-indicator" title="שק פיזי">
+              📷
+            </span>
+          </td>
+          <td>{{ check.payee_name || 'לא זמין' }}</td>
+          <td>{{ formatAmount(check.amount) }}</td>
+          <td>{{ formatDate(check.due_date) }}</td>
+          <td>
+            <span [class]="'status-badge ' + getStatusClass(check.status)">
+              {{ getStatusLabel(check.status) }}
+            </span>
+          </td>
+          <td class="actions">
+            <button class="btn btn-sm btn-info" (click)="viewCheck(check)">צפייה</button>
+            <select class="status-select" (change)="updateStatus(check, $any($event.target).value)">
+              <option value="">עדכון סטטוס</option>
+              <option *ngFor="let status of statuses.slice(1)" [value]="status.value">
+                {{ status.label }}
+              </option>
+            </select>
+            <button class="btn btn-sm btn-warning" (click)="duplicateCheck(check)">שכפול</button>
+            <button class="btn btn-sm btn-danger" (click)="cancelCheck(check)">ביטול</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div *ngIf="!loading && !error && checks.length === 0" class="no-data">
+      לא נמצאו שקים יוצאים
+    </div>
+  </div>
+</div>
