@@ -387,7 +387,7 @@ router.put('/:id/status', (req, res) => {
     return res.status(400).json({ error: 'סטטוס נדרש' });
   }
   
-  const validStatuses = ['waiting_deposit', 'deposited', 'cleared', 'bounced', 'endorsed', 'expired', 'cancelled'];
+  const validStatuses = ['waiting_deposit', 'deposited', 'bounced', 'endorsed', 'expired', 'cancelled'];
   if (!validStatuses.includes(status)) {
     return res.status(400).json({ error: 'סטטוס לא תקין' });
   }
@@ -415,8 +415,6 @@ router.put('/:id/status', (req, res) => {
     // שליחת התראה מוקאפ
     if (status === 'bounced') {
       console.log(`SMS מוקאפ: שק נכנס ${id} חזר`);
-    } else if (status === 'cleared') {
-      console.log(`SMS מוקאפ: שק נכנס ${id} נפרע בהצלחה`);
     }
     
     res.json({ message: 'סטטוס השק עודכן בהצלחה' });
@@ -490,7 +488,6 @@ router.get('/stats', (req, res) => {
     waiting_deposit_amount: 'SELECT COALESCE(SUM(amount), 0) as amount FROM incoming_checks WHERE status = "waiting_deposit"',
     waiting_deposit_count: 'SELECT COUNT(*) as count FROM incoming_checks WHERE status = "waiting_deposit"',
     deposited_count: 'SELECT COUNT(*) as count FROM incoming_checks WHERE status = "deposited"',
-    cleared_count: 'SELECT COUNT(*) as count FROM incoming_checks WHERE status = "cleared"',
     bounced_count: 'SELECT COUNT(*) as count FROM incoming_checks WHERE status = "bounced"'
   };
   

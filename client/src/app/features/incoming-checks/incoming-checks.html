@@ -194,9 +194,20 @@
                     <span class="notice-text">שק פיזי - הוצאת חשבונית מותרת, פעולות הפקדה מוגבלות למעקב בלבד</span>
                   </div>
                   
-                  <button class="action-btn invoice-btn" (click)="issueInvoice()">
+                  <button class="action-btn invoice-btn" 
+                          (click)="issueInvoice()"
+                          [disabled]="selectedCheck?.status !== 'deposited'"
+                          [title]="selectedCheck?.status !== 'deposited' ? 'הוצאת חשבונית זמינה רק לשיקים שהופקדו' : ''">
                     📄 הוצאת חשבונית
                   </button>
+                  
+                  <!-- הודעה עבור כפתור הוצאת חשבונית -->
+                  <div *ngIf="selectedCheck?.status !== 'deposited'" class="status-notice">
+                    <span class="notice-icon">ℹ️</span>
+                    <span class="notice-text">
+                      הוצאת חשבונית זמינה רק לשיקים שהופקדו
+                    </span>
+                  </div>
                   
                   <!-- כפתורי הפקדה - רק למצב ממתאן להפקדה ולא פג תוקף -->
                   <ng-container *ngIf="selectedCheck?.status === 'waiting_deposit' && !isCheckExpired(selectedCheck)">
