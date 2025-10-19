@@ -116,13 +116,14 @@
             class="check-row"
             [ngClass]="getRowClass(check)"
             (click)="toggleRowExpansion(check)">
-            <td class="check-type">
-              <span class="type-icon" 
-                    [title]="check.is_physical ? 'פיזי' : 'דיגיטלי'"
-                    [ngClass]="check.is_physical ? 'physical-icon' : 'digital-icon'">
-                {{ check.is_physical ? '📄' : '💻' }}
-              </span>
-            </td>
+       <td class="check-type">
+         <span class="type-icon" 
+               [title]="check.is_physical ? 'פיזי' : 'דיגיטלי'"
+               [ngClass]="check.is_physical ? 'physical-icon' : 'digital-icon'">
+           {{ check.is_physical ? '📄' : '💻' }}
+         </span>
+         <span *ngIf="hasScheduledDeposit(check)" class="scheduled-icon" title="הפקדה מתוזמנת">📅</span>
+       </td>
             <td class="due-date">{{ formatDate(check.due_date) }}</td>
             <td class="amount">{{ formatAmount(check.amount) }}</td>
             <td class="payer-name">{{ check.payer_name || 'לא זמין' }}</td>
@@ -209,6 +210,13 @@
                     </span>
                   </div>
                   
+                  <!-- כפתור ביטול הפקדה מתוזמנת -->
+                  <button *ngIf="hasScheduledDeposit(selectedCheck)" 
+                          class="action-btn cancel-schedule-btn" 
+                          (click)="cancelScheduledDeposit(selectedCheck)">
+                    🚫 ביטול הפקדה מתוזמנת
+                  </button>
+                  
                   <!-- כפתורי הפקדה - רק למצב ממתאן להפקדה ולא פג תוקף -->
                   <ng-container *ngIf="selectedCheck?.status === 'waiting_deposit' && !isCheckExpired(selectedCheck)">
                     <button class="action-btn deposit-btn" 
@@ -218,7 +226,11 @@
                       💳 הפקדת שיק
                     </button>
                     
-                    <button class="action-btn schedule-btn" (click)="depositCheck('scheduled')" [disabled]="selectedCheck?.is_physical">
+                    <button class="action-btn schedule-btn" 
+                            (click)="depositCheck('scheduled')" 
+                            [disabled]="selectedCheck?.is_physical || !isCheckSchedulable(selectedCheck) || hasScheduledDeposit(selectedCheck)"
+                            [title]="!isCheckSchedulable(selectedCheck) ? 'הפקדה מתוזמנת זמינה רק לשיקים עם תאריך פירעון עתידי' : hasScheduledDeposit(selectedCheck) ? 'יש כבר הפקדה מתוזמנת לשיק זה' : ''"
+                            *ngIf="!hasScheduledDeposit(selectedCheck)">
                       📅 הפקדה מתוזמנת
                     </button>
                   </ng-container>
@@ -254,4 +266,36 @@
     </div>
   </div>
 
+</div>
+
+<!-- חלון תזמון הפקדה -->
+<div *ngIf="showScheduleModal" class="modal-overlay" (click)="closeScheduleModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>תזמון הפקדה</h3>
+      <button class="close-btn" (click)="closeScheduleModal()">×</button>
+    </div>
+    
+    <div class="modal-body">
+      <div class="form-group">
+        <label>תאריך הפקדה המתוזמנת:</label>
+        <input type="date" 
+               [(ngModel)]="scheduledDepositDate" 
+               class="form-input"
+               [min]="selectedCheck?.due_date"
+               [max]="getMaxScheduleDate()">
+      </div>
+      
+      <div class="modal-info">
+        <p><strong>שק:</strong> {{ selectedCheck?.check_number }}</p>
+        <p><strong>סכום:</strong> {{ formatAmount(selectedCheck?.amount || 0) }}</p>
+        <p><strong>תאריך פירעון:</strong> {{ formatDate(selectedCheck?.due_date || '') }}</p>
+      </div>
+    </div>
+    
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeScheduleModal()">ביטול</button>
+      <button class="btn btn-primary" (click)="confirmScheduledDeposit()">אישור</button>
+    </div>
+  </div>
 </div>

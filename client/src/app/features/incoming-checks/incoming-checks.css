@@ -373,6 +373,161 @@
   transform: rotate(180deg);
 }
 
+/* סימון הפקדה מתוזמנת */
+.scheduled-icon {
+  font-size: 12px;
+  margin-left: 5px;
+  color: #FFA500;
+}
+
+/* כפתור ביטול הפקדה מתוזמנת */
+.cancel-schedule-btn {
+  background: #FF4444;
+  color: white;
+  margin-top: 10px;
+}
+
+.cancel-schedule-btn:hover {
+  background: #CC3333;
+}
+
+/* חלון מודאל */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 8px;
+  padding: 0;
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #E0E0E0;
+  background: #F8F9FA;
+  border-radius: 8px 8px 0 0;
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: 18px;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-btn:hover {
+  color: #333;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+.form-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #DDD;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #007BFF;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.modal-info {
+  background: #F8F9FA;
+  padding: 15px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.modal-info p {
+  margin: 5px 0;
+  color: #555;
+}
+
+.modal-footer {
+  padding: 20px;
+  border-top: 1px solid #E0E0E0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  background: #F8F9FA;
+  border-radius: 0 0 8px 8px;
+}
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.btn-secondary {
+  background: #6C757D;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: #5A6268;
+}
+
+.btn-primary {
+  background: #007BFF;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #0056B3;
+}
+
 .type-icon {
   font-size: 20px;
   display: inline-block;

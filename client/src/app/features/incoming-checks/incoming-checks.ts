@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { ApiService } from '../../api/services/api.service';
 
 interface IncomingCheck {
   id: number;
@@ -48,6 +49,8 @@ export class IncomingChecksComponent implements OnInit {
   error = '';
   selectedCheck: IncomingCheck | null = null;
   expandedRowId: number | null = null;
+  showScheduleModal = false;
+  scheduledDepositDate = '';
   
   // פילטרים
   filters = {
@@ -80,7 +83,8 @@ export class IncomingChecksComponent implements OnInit {
 
   constructor(
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private apiService: ApiService
   ) {}
 
   ngOnInit() {
@@ -229,14 +233,14 @@ export class IncomingChecksComponent implements OnInit {
       return;
     }
     
-    // בדיקה אם השק ניתן להפקדה
-    if (!this.isCheckDepositable(this.selectedCheck)) {
-      alert('לא ניתן להפקיד את השק - תאריך פירעון לא הגיע או השק פג תוקף');
-      return;
-    }
-    
     if (this.selectedCheck.status !== 'waiting_deposit') {
       alert('ניתן להפקיד רק שקים במצב ממתין להפקדה');
+      return;
+    }
+
+    // בדיקה אם השק ניתן להפקדה - רק עבור הפקדה מיידית
+    if (type === 'immediate' && !this.isCheckDepositable(this.selectedCheck)) {
+      alert('לא ניתן להפקיד את השק - תאריך פירעון לא הגיע או השק פג תוקף');
       return;
     }
 
@@ -253,23 +257,9 @@ export class IncomingChecksComponent implements OnInit {
           console.error('Error depositing check:', err);
         }
       });
-    } else {
-      const depositDate = prompt('תאריך הפקדה (YYYY-MM-DD):');
-      if (!depositDate) return;
-
-      this.http.put(`http://localhost:3000/api/incoming-checks/${this.selectedCheck.id}/schedule-deposit`, {
-        deposit_date: depositDate
-      }).subscribe({
-        next: () => {
-          this.selectedCheck!.deposit_scheduled_date = depositDate;
-          this.loadChecks(); // רענון הרשימה
-          alert('הפקדה מתוזמנת בהצלחה');
-        },
-        error: (err) => {
-          alert('שגיאה בתזמון ההפקדה');
-          console.error('Error scheduling deposit:', err);
-        }
-      });
+    } else if (type === 'scheduled') {
+      // הפקדה מתוזמנת - פתיחת חלון בחירת תאריך
+      this.openScheduleModal(this.selectedCheck);
     }
   }
 
@@ -287,6 +277,86 @@ export class IncomingChecksComponent implements OnInit {
     sixMonthsFromDue.setMonth(sixMonthsFromDue.getMonth() + 6);
     
     return today >= dueDate && today <= sixMonthsFromDue;
+  }
+
+  // בדיקה אם ניתן לתזמן הפקדה
+  isCheckSchedulable(check: any): boolean {
+    if (!check || check.is_physical || check.status !== 'waiting_deposit') {
+      return false;
+    }
+    
+    const today = new Date();
+    const dueDate = new Date(check.due_date);
+    
+    // רק אם תאריך הפירעון עתידי
+    return dueDate > today;
+  }
+
+  // בדיקה אם יש הפקדה מתוזמנת
+  hasScheduledDeposit(check: any): boolean {
+    return check && check.scheduled_deposit_date;
+  }
+
+  // פתיחת חלון תזמון הפקדה
+  openScheduleModal(check: any) {
+    this.selectedCheck = check;
+    this.scheduledDepositDate = check.due_date; // ברירת מחדל = תאריך פירעון
+    this.showScheduleModal = true;
+  }
+
+  // סגירת חלון תזמון הפקדה
+  closeScheduleModal() {
+    this.showScheduleModal = false;
+    this.scheduledDepositDate = '';
+    this.selectedCheck = null;
+  }
+
+  // אישור תזמון הפקדה
+  confirmScheduledDeposit() {
+    if (!this.selectedCheck || !this.scheduledDepositDate) {
+      return;
+    }
+
+    this.apiService.scheduleDeposit(this.selectedCheck.id, this.scheduledDepositDate).subscribe({
+      next: (response) => {
+        alert('הפקדה מתוזמנת נרשמה בהצלחה');
+        this.closeScheduleModal();
+        this.loadChecks(); // רענון רשימת השיקים
+      },
+      error: (error) => {
+        console.error('Error scheduling deposit:', error);
+        alert('שגיאה בתזמון ההפקדה: ' + (error.error?.error || error.message));
+      }
+    });
+  }
+
+  // ביטול הפקדה מתוזמנת
+  cancelScheduledDeposit(check: any) {
+    if (!confirm('האם אתה בטוח שברצונך לבטל את ההפקדה המתוזמנת?')) {
+      return;
+    }
+
+    this.apiService.cancelScheduledDeposit(check.id).subscribe({
+      next: (response) => {
+        alert('הפקדה מתוזמנת בוטלה בהצלחה');
+        this.loadChecks(); // רענון רשימת השיקים
+      },
+      error: (error) => {
+        console.error('Error canceling scheduled deposit:', error);
+        alert('שגיאה בביטול ההפקדה המתוזמנת: ' + (error.error?.error || error.message));
+      }
+    });
+  }
+
+  // קבלת התאריך המקסימלי לתזמון הפקדה (6 חודשים מתאריך פירעון)
+  getMaxScheduleDate(): string {
+    if (!this.selectedCheck) return '';
+    
+    const dueDate = new Date(this.selectedCheck.due_date);
+    const maxDate = new Date(dueDate);
+    maxDate.setMonth(maxDate.getMonth() + 6);
+    
+    return maxDate.toISOString().split('T')[0];
   }
 
   // קבלת הודעת כלי עבור כפתור ההפקדה

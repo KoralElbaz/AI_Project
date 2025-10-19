@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
 import { HelloResponse, API_ENDPOINTS } from '../models/api.models';
 import { API_CONFIG } from '../constants/api.constants';
 
@@ -22,6 +22,38 @@ export class ApiService {
     } catch (error) {
       throw this.handleError(error as HttpErrorResponse);
     }
+  }
+
+  /**
+   * הפקדת שיק מיידית
+   */
+  depositCheck(checkId: number): Observable<any> {
+    const url = `${this.baseUrl}/api/incoming-checks/${checkId}/deposit`;
+    return this.http.put(url, {});
+  }
+
+  /**
+   * תזמון הפקדה
+   */
+  scheduleDeposit(checkId: number, scheduledDate: string): Observable<any> {
+    const url = `${this.baseUrl}/api/incoming-checks/${checkId}/schedule-deposit`;
+    return this.http.post(url, { scheduled_date: scheduledDate });
+  }
+
+  /**
+   * ביטול הפקדה מתוזמנת
+   */
+  cancelScheduledDeposit(checkId: number): Observable<any> {
+    const url = `${this.baseUrl}/api/incoming-checks/${checkId}/cancel-scheduled-deposit`;
+    return this.http.delete(url);
+  }
+
+  /**
+   * קבלת הפקדות מתוזמנות ליום הנוכחי
+   */
+  getScheduledDeposits(): Observable<any> {
+    const url = `${this.baseUrl}/api/incoming-checks/scheduled-deposits`;
+    return this.http.get(url);
   }
 
   /**
