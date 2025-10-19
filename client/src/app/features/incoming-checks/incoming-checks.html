@@ -24,10 +24,14 @@
 
   <!-- Top Controls -->
   <div class="top-controls">
-    <div class="save-print-btn">
-      <span class="save-icon">📤</span>
-      <span>שמירה והדפסה</span>
-    </div>
+    <button class="save-print-btn" (click)="printAllChecks()">
+      <span class="save-icon">🖨️</span>
+      <span>הדפס כל השקים</span>
+    </button>
+    <button class="export-btn" (click)="exportToExcel()">
+      <span class="export-icon">📊</span>
+      <span>ייצא לאקסל</span>
+    </button>
   </div>
 
   <!-- Filters -->
@@ -200,6 +204,10 @@
                           [disabled]="selectedCheck?.status !== 'deposited'"
                           [title]="selectedCheck?.status !== 'deposited' ? 'הוצאת חשבונית זמינה רק לשיקים שהופקדו' : ''">
                     📄 הוצאת חשבונית
+                  </button>
+                  
+                  <button class="action-btn print-btn" (click)="printCheck()">
+                    🖨️ הדפסה
                   </button>
                   
                   <!-- הודעה עבור כפתור הוצאת חשבונית -->

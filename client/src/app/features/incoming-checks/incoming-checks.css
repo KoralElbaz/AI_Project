@@ -86,27 +86,49 @@
 /* Top Controls */
 .top-controls {
   margin: 0 24px 16px 24px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
-.save-print-btn {
+.save-print-btn,
+.export-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: #333333;
+  color: white;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  padding: 8px 12px;
+  padding: 10px 16px;
   border-radius: 8px;
+  border: none;
   transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.save-print-btn {
+  background: #6DD400;
 }
 
 .save-print-btn:hover {
-  background: #F0F8FF;
+  background: #5BC000;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(109, 212, 0, 0.3);
 }
 
-.save-icon {
-  color: #6DD400;
+.export-btn {
+  background: #3B82F6;
+}
+
+.export-btn:hover {
+  background: #2563EB;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+}
+
+.save-icon,
+.export-icon {
   font-size: 16px;
 }
 
@@ -389,6 +411,16 @@
 
 .cancel-schedule-btn:hover {
   background: #CC3333;
+}
+
+/* כפתור הדפסה */
+.print-btn {
+  background: #6C757D;
+  color: white;
+}
+
+.print-btn:hover {
+  background: #5A6268;
 }
 
 /* חלון מודאל */
