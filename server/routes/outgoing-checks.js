@@ -120,7 +120,7 @@ router.get('/:id', (req, res) => {
 
 // POST /api/outgoing-checks - יצירת שק יוצא בודד
 router.post('/', (req, res) => {
-  const { check_number, payee_name, id_number, identifier_type, phone, bank_branch, account_number, amount, issue_date, due_date, is_physical, notes } = req.body;
+  const { check_number, payee_name, id_number, identifier_type, phone, bank_name, bank_branch, account_number, amount, issue_date, due_date, is_physical, notes } = req.body;
   
   // ללא ולידציות - כל השדות מתקבלים
   
@@ -135,14 +135,44 @@ router.post('/', (req, res) => {
       return res.status(400).json({ error: 'מספר השק כבר קיים במערכת' });
     }
     
-    // יצירת השק
+    // יצירת השק עם כל השדות
     const query = `
       INSERT INTO outgoing_checks 
-      (check_number, payee_contact_id, payee_name, amount, currency, issue_date, due_date, is_physical, notes)
-      VALUES (?, NULL, ?, ?, 'ILS', ?, ?, ?, ?)
+      (check_number, payee_contact_id, payee_name, id_number, identifier_type, phone, bank_name, bank_branch, account_number, amount, currency, issue_date, due_date, is_physical, notes)
+      VALUES (?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, 'ILS', ?, ?, ?, ?)
     `;
     
-    db.run(query, [check_number, payee_name, amount, issue_date, due_date, is_physical || 0, notes], function(err) {
+    console.log('Creating check with data:', {
+      check_number, 
+      payee_name, 
+      id_number, 
+      identifier_type, 
+      phone, 
+      bank_name,
+      bank_branch, 
+      account_number, 
+      amount, 
+      issue_date, 
+      due_date, 
+      is_physical, 
+      notes
+    });
+    
+    db.run(query, [
+      check_number, 
+      payee_name, 
+      id_number, 
+      identifier_type, 
+      phone, 
+      bank_name,
+      bank_branch, 
+      account_number, 
+      amount, 
+      issue_date, 
+      due_date, 
+      is_physical || 0, 
+      notes
+    ], function(err) {
       if (err) {
         console.error('Error creating outgoing check:', err);
         return res.status(500).json({ error: 'שגיאה ביצירת השק' });
