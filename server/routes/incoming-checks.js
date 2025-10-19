@@ -270,16 +270,16 @@ router.put('/:id/deposit', (req, res) => {
     
     // בדיקת תאריכים
     const today = new Date();
-    const issueDate = new Date(check.issue_date);
-    const sixMonthsLater = new Date(issueDate);
-    sixMonthsLater.setMonth(sixMonthsLater.getMonth() + 6);
+    const dueDate = new Date(check.due_date);
+    const sixMonthsFromDue = new Date(dueDate);
+    sixMonthsFromDue.setMonth(sixMonthsFromDue.getMonth() + 6);
     
-    if (today < issueDate) {
-      return res.status(400).json({ error: 'לא ניתן להפקיד לפני תאריך השק' });
+    if (today < dueDate) {
+      return res.status(400).json({ error: 'לא ניתן להפקיד לפני תאריך הפירעון' });
     }
     
-    if (today > sixMonthsLater) {
-      return res.status(400).json({ error: 'השק פג תוקף (עברו 6 חודשים)' });
+    if (today > sixMonthsFromDue) {
+      return res.status(400).json({ error: 'השק פג תוקף (עברו 6 חודשים מתאריך הפירעון)' });
     }
     
     // בדיקת כפילות
