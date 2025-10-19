@@ -60,7 +60,7 @@ router.get('/', (req, res) => {
   if (sort) {
     switch (sort) {
       case 'due_date':
-        query += ' ORDER BY oc.due_date ASC';
+        query += ' ORDER BY oc.due_date DESC';
         break;
       case 'amount':
         query += ' ORDER BY oc.amount DESC';

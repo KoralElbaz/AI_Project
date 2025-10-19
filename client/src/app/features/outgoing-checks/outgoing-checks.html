@@ -103,11 +103,11 @@
     <table class="checks-table">
       <thead>
         <tr>
+          <th>סוג השיק</th>
           <th>תאריך פירעון</th>
           <th>סכום</th>
           <th>שם המוטב</th>
           <th>סטטוס</th>
-          <th>סימונים</th>
         </tr>
       </thead>
       <tbody>
@@ -116,18 +116,23 @@
             class="check-row"
             [ngClass]="getRowClass(check)"
             (click)="toggleRowExpansion(check)">
+            <td class="check-type">
+              <span class="type-icon" 
+                    [title]="check.is_physical ? 'פיזי' : 'דיגיטלי'"
+                    [ngClass]="check.is_physical ? 'physical-icon' : 'digital-icon'">
+                {{ check.is_physical ? '📄' : '💻' }}
+              </span>
+            </td>
             <td class="due-date">{{ formatDate(check.due_date) }}</td>
             <td class="amount">{{ formatAmount(check.amount) }}</td>
             <td class="payee-name">{{ check.payee_name || 'לא זמין' }}</td>
             <td class="status">
-              <span class="status-badge" [ngClass]="getStatusClass(getEffectiveStatus(check))">
-                {{ getStatusLabel(getEffectiveStatus(check)) }}
-              </span>
-            </td>
-            <td class="marks">
-              <span *ngFor="let mark of getCheckMarks(check); let last = last">
-                {{ mark }}<span *ngIf="!last"> · </span>
-              </span>
+              <div class="status-container">
+                <span class="status-badge" [ngClass]="getStatusClass(getEffectiveStatus(check))">
+                  {{ getStatusLabel(getEffectiveStatus(check)) }}
+                </span>
+                <span class="expand-arrow" [ngClass]="{'expanded': isRowExpanded(check)}">▼</span>
+              </div>
             </td>
           </tr>
           

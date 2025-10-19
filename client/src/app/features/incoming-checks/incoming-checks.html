@@ -103,11 +103,11 @@
     <table class="checks-table">
       <thead>
         <tr>
+          <th>סוג השיק</th>
           <th>תאריך פירעון</th>
           <th>סכום</th>
           <th>שם המשלם</th>
           <th>סטטוס</th>
-          <th>סימונים</th>
         </tr>
       </thead>
       <tbody>
@@ -116,18 +116,23 @@
             class="check-row"
             [ngClass]="getRowClass(check)"
             (click)="toggleRowExpansion(check)">
+            <td class="check-type">
+              <span class="type-icon" 
+                    [title]="check.is_physical ? 'פיזי' : 'דיגיטלי'"
+                    [ngClass]="check.is_physical ? 'physical-icon' : 'digital-icon'">
+                {{ check.is_physical ? '📄' : '💻' }}
+              </span>
+            </td>
             <td class="due-date">{{ formatDate(check.due_date) }}</td>
             <td class="amount">{{ formatAmount(check.amount) }}</td>
             <td class="payer-name">{{ check.payer_name || 'לא זמין' }}</td>
             <td class="status">
-              <span class="status-badge" [ngClass]="getStatusClass(getEffectiveStatus(check))">
-                {{ getStatusLabel(getEffectiveStatus(check)) }}
-              </span>
-            </td>
-            <td class="marks">
-              <span *ngFor="let mark of getCheckMarks(check); let last = last">
-                {{ mark }}<span *ngIf="!last"> · </span>
-              </span>
+              <div class="status-container">
+                <span class="status-badge" [ngClass]="getStatusClass(getEffectiveStatus(check))">
+                  {{ getStatusLabel(getEffectiveStatus(check)) }}
+                </span>
+                <span class="expand-arrow" [ngClass]="{'expanded': isRowExpanded(check)}">▼</span>
+              </div>
             </td>
           </tr>
           
@@ -189,9 +194,20 @@
                     <span class="notice-text">שק פיזי - הוצאת חשבונית מותרת, פעולות הפקדה מוגבלות למעקב בלבד</span>
                   </div>
                   
-                  <button class="action-btn invoice-btn" (click)="issueInvoice()">
+                  <button class="action-btn invoice-btn" 
+                          (click)="issueInvoice()"
+                          [disabled]="selectedCheck?.status !== 'deposited'"
+                          [title]="selectedCheck?.status !== 'deposited' ? 'הוצאת חשבונית זמינה רק לשיקים שהופקדו' : ''">
                     📄 הוצאת חשבונית
                   </button>
+                  
+                  <!-- הודעה עבור כפתור הוצאת חשבונית -->
+                  <div *ngIf="selectedCheck?.status !== 'deposited'" class="status-notice">
+                    <span class="notice-icon">ℹ️</span>
+                    <span class="notice-text">
+                      הוצאת חשבונית זמינה רק לשיקים שהופקדו
+                    </span>
+                  </div>
                   
                   <!-- כפתורי הפקדה - רק למצב ממתאן להפקדה ולא פג תוקף -->
                   <ng-container *ngIf="selectedCheck?.status === 'waiting_deposit' && !isCheckExpired(selectedCheck)">
