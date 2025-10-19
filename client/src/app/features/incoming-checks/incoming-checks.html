@@ -199,20 +199,12 @@
                     🖨️ הדפסה
                   </button>
                   
-                  <button class="action-btn invoice-btn" 
-                          (click)="issueInvoice()"
-                          [disabled]="selectedCheck?.status !== 'deposited'"
-                          [title]="selectedCheck?.status !== 'deposited' ? 'הוצאת חשבונית זמינה רק לשיקים שהופקדו' : ''">
+                  <!-- כפתור הוצאת חשבונית - רק לשיקים שהופקדו -->
+                  <button *ngIf="selectedCheck?.status === 'deposited'" 
+                          class="action-btn invoice-btn" 
+                          (click)="issueInvoice()">
                     📄 הוצאת חשבונית
                   </button>
-                  
-                  <!-- הודעה עבור כפתור הוצאת חשבונית -->
-                  <div *ngIf="selectedCheck?.status !== 'deposited'" class="status-notice">
-                    <span class="notice-icon">ℹ️</span>
-                    <span class="notice-text">
-                      הוצאת חשבונית זמינה רק לשיקים שהופקדו
-                    </span>
-                  </div>
                   
                   <!-- כפתור ביטול הפקדה מתוזמנת -->
                   <button *ngIf="hasScheduledDeposit(selectedCheck)" 
@@ -221,31 +213,20 @@
                     🚫 ביטול הפקדה מתוזמנת
                   </button>
                   
-                  <!-- כפתורי הפקדה - רק למצב ממתאן להפקדה ולא פג תוקף -->
-                  <ng-container *ngIf="selectedCheck?.status === 'waiting_deposit' && !isCheckExpired(selectedCheck)">
+                  <!-- כפתורי הפקדה - רק למצב ממתין להפקדה, לא פג תוקף, דיגיטלי וזמין להפקדה -->
+                  <ng-container *ngIf="selectedCheck?.status === 'waiting_deposit' && !isCheckExpired(selectedCheck) && !selectedCheck?.is_physical && isCheckDepositable(selectedCheck)">
                     <button class="action-btn deposit-btn" 
-                            (click)="depositCheck('immediate')" 
-                            [disabled]="selectedCheck?.is_physical || !isCheckDepositable(selectedCheck)"
-                            [title]="getDepositButtonTooltip(selectedCheck)">
+                            (click)="depositCheck('immediate')">
                       💳 הפקדת שיק
                     </button>
                     
-                    <button class="action-btn schedule-btn" 
-                            (click)="depositCheck('scheduled')" 
-                            [disabled]="selectedCheck?.is_physical || !isCheckSchedulable(selectedCheck) || hasScheduledDeposit(selectedCheck)"
-                            [title]="!isCheckSchedulable(selectedCheck) ? 'הפקדה מתוזמנת זמינה רק לשיקים עם תאריך פירעון עתידי' : hasScheduledDeposit(selectedCheck) ? 'יש כבר הפקדה מתוזמנת לשיק זה' : ''"
-                            *ngIf="!hasScheduledDeposit(selectedCheck)">
+                    <!-- הפקדה מתוזמנת - רק אם זמין ולא קיימת כבר -->
+                    <button *ngIf="isCheckSchedulable(selectedCheck) && !hasScheduledDeposit(selectedCheck)" 
+                            class="action-btn schedule-btn" 
+                            (click)="depositCheck('scheduled')">
                       📅 הפקדה מתוזמנת
                     </button>
                   </ng-container>
-                  
-                  <!-- הודעה עבור שיקים שכבר הופקדו/נפרעו או פג תוקף -->
-                  <div *ngIf="(selectedCheck?.status !== 'waiting_deposit' || isCheckExpired(selectedCheck)) && !selectedCheck?.is_physical" class="status-notice">
-                    <span class="notice-icon">ℹ️</span>
-                    <span class="notice-text">
-                      {{ getStatusNotice(selectedCheck) }}
-                    </span>
-                  </div>
                 </div>
               </div>
             </td>

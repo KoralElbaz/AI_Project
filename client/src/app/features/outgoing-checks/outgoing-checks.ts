@@ -615,16 +615,34 @@ export class OutgoingChecksComponent implements OnInit {
       return;
     }
     
-    this.http.post(`http://localhost:3000/api/outgoing-checks/${this.selectedCheck.id}/duplicate`, {}).subscribe({
-      next: (data: any) => {
-        alert('שק הועתק - ניתן ליצור שק חדש עם הנתונים');
-        // כאן תוכל לפתוח טופס יצירת שק חדש עם הנתונים
-      },
-      error: (err) => {
-        alert('שגיאה בשכפול השק');
-        console.error('Error duplicating check:', err);
-      }
-    });
+    // יצירת מספר שק חדש
+    const newCheckNumber = this.generateNewCheckNumber();
+    
+    // הכנת פרמטרים לניווט למסך יצירת שיק
+    const queryParams = {
+      type: 'outgoing',
+      duplicate: 'true',
+      check_number: newCheckNumber,
+      contact_id: this.selectedCheck.payee_contact_id,
+      amount: this.selectedCheck.amount,
+      notes: this.selectedCheck.notes,
+      bank_name: this.selectedCheck.bank_name || '',
+      bank_branch: this.selectedCheck.bank_branch || ''
+    };
+    
+    // סגירת החלונית הנוכחית
+    this.expandedRowId = null;
+    this.selectedCheck = null;
+    
+    // ניווט למסך יצירת שיק עם הפרמטרים
+    this.router.navigate(['/create-check'], { queryParams });
+  }
+
+  // יצירת מספר שק חדש
+  generateNewCheckNumber(): string {
+    const timestamp = Date.now().toString().slice(-8);
+    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    return `${timestamp}${random}`;
   }
 
   // פורמט
