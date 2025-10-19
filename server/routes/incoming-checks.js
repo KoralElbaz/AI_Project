@@ -9,11 +9,11 @@ router.get('/', (req, res) => {
   let query = `
     SELECT 
       ic.*,
-      c.name as payer_name,
+      COALESCE(c.name, ic.payer_name) as payer_name,
       c.phone as payer_phone,
       c.email as payer_email,
-      c.bank_name,
-      c.bank_branch,
+      COALESCE(c.bank_name, ic.bank_name) as bank_name,
+      COALESCE(c.bank_branch, ic.bank_branch) as bank_branch,
       c.account_number
     FROM incoming_checks ic
     LEFT JOIN contacts c ON ic.payer_contact_id = c.id
