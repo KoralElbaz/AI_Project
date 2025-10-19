@@ -308,34 +308,6 @@ router.put('/:id/deposit', (req, res) => {
   });
 });
 
-// PUT /api/incoming-checks/:id/schedule-deposit - תזמון הפקדה
-router.put('/:id/schedule-deposit', (req, res) => {
-  const { id } = req.params;
-  const { deposit_date } = req.body;
-  
-  if (!deposit_date) {
-    return res.status(400).json({ error: 'תאריך הפקדה נדרש' });
-  }
-  
-  const query = `
-    UPDATE incoming_checks 
-    SET deposit_scheduled_date = ?, updated_at = CURRENT_TIMESTAMP
-    WHERE id = ? AND status = 'waiting_deposit'
-  `;
-  
-  db.run(query, [deposit_date, id], function(err) {
-    if (err) {
-      console.error('Error scheduling deposit:', err);
-      return res.status(500).json({ error: 'שגיאה בתזמון ההפקדה' });
-    }
-    
-    if (this.changes === 0) {
-      return res.status(404).json({ error: 'שק לא נמצא או לא ניתן לתזמן הפקדה' });
-    }
-    
-    res.json({ message: 'הפקדה מתוזמנת בהצלחה' });
-  });
-});
 
 // POST /api/incoming-checks/:id/invoice - הוצאת חשבונית
 router.post('/:id/invoice', (req, res) => {
@@ -509,6 +481,110 @@ router.get('/stats', (req, res) => {
       }
     });
   });
+});
+
+// POST /api/incoming-checks/:id/schedule-deposit - תזמון הפקדה
+router.post('/:id/schedule-deposit', (req, res) => {
+  const { id } = req.params;
+  const { scheduled_date } = req.body;
+  
+  if (!scheduled_date) {
+    return res.status(400).json({ error: 'תאריך הפקדה מתוזמנת נדרש' });
+  }
+  
+  // בדיקה שהתאריך תקין
+  const scheduledDate = new Date(scheduled_date);
+  const today = new Date();
+  
+  if (scheduledDate <= today) {
+    return res.status(400).json({ error: 'תאריך הפקדה מתוזמנת חייב להיות בעתיד' });
+  }
+  
+  // בדיקה שהשק קיים ובמצב המתאים
+  db.get('SELECT * FROM incoming_checks WHERE id = ?', [id], (err, check) => {
+    if (err) {
+      console.error('Error fetching check:', err);
+      return res.status(500).json({ error: 'שגיאה בבדיקת השק' });
+    }
+    
+    if (!check) {
+      return res.status(404).json({ error: 'שק לא נמצא' });
+    }
+    
+    if (check.status !== 'waiting_deposit') {
+      return res.status(400).json({ error: 'ניתן לתזמן הפקדה רק לשקים במצב ממתין להפקדה' });
+    }
+    
+    if (check.is_physical) {
+      return res.status(400).json({ error: 'לא ניתן לתזמן הפקדה לשק פיזי' });
+    }
+    
+    // בדיקה שהתאריך לא יותר מ-6 חודשים קדימה מתאריך הפירעון
+    const dueDate = new Date(check.due_date);
+    const maxDate = new Date(dueDate);
+    maxDate.setMonth(maxDate.getMonth() + 6);
+    
+    if (scheduledDate > maxDate) {
+      return res.status(400).json({ error: 'תאריך הפקדה מתוזמנת לא יכול להיות יותר מ-6 חודשים קדימה מתאריך הפירעון' });
+    }
+    
+    // עדכון השק עם תאריך הפקדה מתוזמנת
+    db.run(
+      'UPDATE incoming_checks SET scheduled_deposit_date = ? WHERE id = ?',
+      [scheduled_date, id],
+      function(err) {
+        if (err) {
+          console.error('Error scheduling deposit:', err);
+          return res.status(500).json({ error: 'שגיאה בתזמון ההפקדה' });
+        }
+        
+        res.json({ 
+          message: 'הפקדה מתוזמנת נרשמה בהצלחה',
+          scheduled_date: scheduled_date
+        });
+      }
+    );
+  });
+});
+
+// DELETE /api/incoming-checks/:id/cancel-scheduled-deposit - ביטול הפקדה מתוזמנת
+router.delete('/:id/cancel-scheduled-deposit', (req, res) => {
+  const { id } = req.params;
+  
+  db.run(
+    'UPDATE incoming_checks SET scheduled_deposit_date = NULL WHERE id = ?',
+    [id],
+    function(err) {
+      if (err) {
+        console.error('Error canceling scheduled deposit:', err);
+        return res.status(500).json({ error: 'שגיאה בביטול ההפקדה המתוזמנת' });
+      }
+      
+      if (this.changes === 0) {
+        return res.status(404).json({ error: 'שק לא נמצא או אין הפקדה מתוזמנת' });
+      }
+      
+      res.json({ message: 'הפקדה מתוזמנת בוטלה בהצלחה' });
+    }
+  );
+});
+
+// GET /api/incoming-checks/scheduled-deposits - קבלת הפקדות מתוזמנות ליום הנוכחי
+router.get('/scheduled-deposits', (req, res) => {
+  const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+  
+  db.all(
+    'SELECT * FROM incoming_checks WHERE scheduled_deposit_date = ? AND status = "waiting_deposit"',
+    [today],
+    (err, checks) => {
+      if (err) {
+        console.error('Error fetching scheduled deposits:', err);
+        return res.status(500).json({ error: 'שגיאה בקבלת הפקדות מתוזמנות' });
+      }
+      
+      res.json(checks);
+    }
+  );
 });
 
 module.exports = router;

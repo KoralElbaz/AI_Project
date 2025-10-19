@@ -315,6 +315,47 @@ router.put('/:id/status', (req, res) => {
   });
 });
 
+// DELETE /api/outgoing-checks/:id - מחיקת שק
+router.delete('/:id', (req, res) => {
+  const { id } = req.params;
+  
+  // בדיקה שהשק קיים
+  db.get('SELECT id, check_number, status FROM outgoing_checks WHERE id = ?', [id], (err, row) => {
+    if (err) {
+      console.error('Error checking check existence:', err);
+      return res.status(500).json({ error: 'שגיאה בבדיקת השק' });
+    }
+    
+    if (!row) {
+      return res.status(404).json({ error: 'שק לא נמצא' });
+    }
+    
+    // בדיקה שהשק במצב ממתין לפירעון
+    if (row.status !== 'pending') {
+      return res.status(400).json({ error: 'ניתן למחוק רק שקים במצב ממתין לפירעון' });
+    }
+    
+    // מחיקת השק
+    db.run('DELETE FROM outgoing_checks WHERE id = ?', [id], function(err) {
+      if (err) {
+        console.error('Error deleting check:', err);
+        return res.status(500).json({ error: 'שגיאה במחיקת השק' });
+      }
+      
+      if (this.changes === 0) {
+        return res.status(404).json({ error: 'שק לא נמצא' });
+      }
+      
+      console.log(`SMS מוקאפ: שק יוצא ${row.check_number} נמחק בהצלחה`);
+      
+      res.json({ 
+        message: 'השק נמחק בהצלחה',
+        check_number: row.check_number
+      });
+    });
+  });
+});
+
 // POST /api/outgoing-checks/:id/duplicate - שכפול שק
 router.post('/:id/duplicate', (req, res) => {
   const { id } = req.params;
