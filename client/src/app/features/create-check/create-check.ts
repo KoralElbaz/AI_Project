@@ -70,6 +70,10 @@ export class CreateCheckComponent implements OnInit {
         this.checkForm.is_physical = true;
         this.isSeries = false; // שיקים פיזיים רק בודדים
       }
+      // לשקים דיגיטליים - תמיד שיקים יוצאים
+      if (!this.checkForm.is_physical) {
+        this.checkType = 'outgoing';
+      }
     });
   }
 
@@ -78,6 +82,10 @@ export class CreateCheckComponent implements OnInit {
     this.checkForm.issue_date = today;
     this.checkForm.due_date = today;
     this.seriesForm.start_month = today;
+    // לשקים דיגיטליים - תמיד שיקים יוצאים
+    if (!this.checkForm.is_physical) {
+      this.checkType = 'outgoing';
+    }
   }
 
   loadContacts() {
@@ -92,21 +100,33 @@ export class CreateCheckComponent implements OnInit {
   }
 
   onCheckTypeChange() {
-    this.resetForm();
+    // רק לשיקים פיזיים
+    if (this.checkForm.is_physical) {
+      this.resetForm();
+    }
+    // לשקים דיגיטליים - תמיד שיקים יוצאים
+    if (!this.checkForm.is_physical) {
+      this.checkType = 'outgoing';
+    }
   }
 
   onSeriesToggle() {
     this.resetForm();
+    // לשקים דיגיטליים - תמיד שיקים יוצאים
+    if (!this.checkForm.is_physical) {
+      this.checkType = 'outgoing';
+    }
   }
 
   resetForm() {
+    const isPhysical = this.checkForm.is_physical;
     this.checkForm = {
       check_number: '',
       contact_id: '',
       amount: '',
       issue_date: new Date().toISOString().split('T')[0],
       due_date: new Date().toISOString().split('T')[0],
-      is_physical: false,
+      is_physical: isPhysical,
       notes: '',
       deposit_immediately: false,
       payer_name: '',
@@ -157,7 +177,7 @@ export class CreateCheckComponent implements OnInit {
         return false;
       }
     } else {
-      // עבור שיקים דיגיטליים, בדיקה של איש קשר
+      // עבור שיקים דיגיטליים, בדיקה של איש קשר (רק שיקים יוצאים)
       if (!this.checkForm.contact_id) {
         this.error = 'יש לבחור איש קשר';
         return false;
@@ -184,6 +204,7 @@ export class CreateCheckComponent implements OnInit {
   }
 
   validateSeriesForm(): boolean {
+    // רק שיקים יוצאים לשקים דיגיטליים
     if (!this.seriesForm.contact_id) {
       this.error = 'יש לבחור איש קשר';
       return false;
@@ -303,85 +324,37 @@ export class CreateCheckComponent implements OnInit {
             this.loading = false;
           }
         });
-      } else {
-        // יצירת שק דיגיטלי נכנס
-        const checkData = {
-          check_number: this.checkForm.check_number,
-          payer_contact_id: parseInt(this.checkForm.contact_id),
-          amount: parseFloat(this.checkForm.amount),
-          issue_date: this.checkForm.issue_date,
-          due_date: this.checkForm.due_date,
-          is_physical: this.checkForm.is_physical,
-          notes: this.checkForm.notes
-        };
-
-        this.incomingChecksService.createCheck(checkData).subscribe({
-          next: (response) => {
-            this.success = 'שק נכנס נוצר בהצלחה';
-            this.loading = false;
-            setTimeout(() => {
-              this.router.navigate(['/incoming-checks']);
-            }, 2000);
-          },
-          error: (err) => {
-            this.error = err.error?.error || 'שגיאה ביצירת השק';
-            this.loading = false;
-          }
-        });
       }
     }
   }
 
   createSeries() {
-    if (this.checkType === 'outgoing') {
-      const seriesData = {
-        payee_contact_id: parseInt(this.seriesForm.contact_id),
-        amount: parseFloat(this.seriesForm.amount),
-        day_of_month: parseInt(this.seriesForm.day_of_month),
-        total_checks: parseInt(this.seriesForm.total_checks),
-        start_month: this.seriesForm.start_month
-      };
+    // רק שיקים יוצאים לשקים דיגיטליים
+    const seriesData = {
+      payee_contact_id: parseInt(this.seriesForm.contact_id),
+      amount: parseFloat(this.seriesForm.amount),
+      day_of_month: parseInt(this.seriesForm.day_of_month),
+      total_checks: parseInt(this.seriesForm.total_checks),
+      start_month: this.seriesForm.start_month
+    };
 
-      this.outgoingChecksService.createSeries(seriesData).subscribe({
-        next: (response) => {
-          this.success = `סדרת שקים יוצאים נוצרה בהצלחה - ${seriesData.total_checks} שקים`;
-          this.loading = false;
-          setTimeout(() => {
-            this.router.navigate(['/outgoing-checks']);
-          }, 2000);
-        },
-        error: (err) => {
-          this.error = err.error?.error || 'שגיאה ביצירת סדרת השקים';
-          this.loading = false;
-        }
-      });
-    } else {
-      const seriesData = {
-        payer_contact_id: parseInt(this.seriesForm.contact_id),
-        amount: parseFloat(this.seriesForm.amount),
-        day_of_month: parseInt(this.seriesForm.day_of_month),
-        total_checks: parseInt(this.seriesForm.total_checks),
-        start_month: this.seriesForm.start_month
-      };
-
-      this.incomingChecksService.createSeries(seriesData).subscribe({
-        next: (response) => {
-          this.success = `סדרת שקים נכנסים נוצרה בהצלחה - ${seriesData.total_checks} שקים`;
-          this.loading = false;
-          setTimeout(() => {
-            this.router.navigate(['/incoming-checks']);
-          }, 2000);
-        },
-        error: (err) => {
-          this.error = err.error?.error || 'שגיאה ביצירת סדרת השקים';
-          this.loading = false;
-        }
-      });
-    }
+    this.outgoingChecksService.createSeries(seriesData).subscribe({
+      next: (response) => {
+        this.success = `סדרת שקים יוצאים נוצרה בהצלחה - ${seriesData.total_checks} שקים`;
+        this.loading = false;
+        setTimeout(() => {
+          this.router.navigate(['/outgoing-checks']);
+        }, 2000);
+      },
+      error: (err) => {
+        this.error = err.error?.error || 'שגיאה ביצירת סדרת השקים';
+        this.loading = false;
+      }
+    });
   }
 
   cancel() {
-    this.router.navigate(['/home']);
+    this.router.navigate(['/dashboard']);
   }
 
   formatAmount(amount: number): string {
