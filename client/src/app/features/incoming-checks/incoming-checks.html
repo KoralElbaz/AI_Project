@@ -15,6 +15,9 @@
         <button class="create-btn" (click)="navigateToCreateCheck()">
           ✏️ צור שק חדש
         </button>
+        <button class="physical-check-btn" (click)="addPhysicalCheck()">
+          📄 הוסף שק פיזי
+        </button>
       </div>
     </div>
   </header>
@@ -171,15 +174,20 @@
                 <div class="drawer-actions">
                   <h4>פעולות</h4>
                   
-                  <button class="action-btn invoice-btn" (click)="issueInvoice()">
+                  <div *ngIf="selectedCheck?.is_physical" class="physical-check-notice">
+                    <span class="notice-icon">⚠️</span>
+                    <span class="notice-text">שק פיזי - פעולות מוגבלות למעקב בלבד</span>
+                  </div>
+                  
+                  <button class="action-btn invoice-btn" (click)="issueInvoice()" [disabled]="selectedCheck?.is_physical">
                     📄 הוצאת חשבונית
                   </button>
                   
-                  <button class="action-btn deposit-btn" (click)="depositCheck('immediate')">
+                  <button class="action-btn deposit-btn" (click)="depositCheck('immediate')" [disabled]="selectedCheck?.is_physical">
                     💰 הפקדה מיידית
                   </button>
                   
-                  <button class="action-btn schedule-btn" (click)="depositCheck('scheduled')">
+                  <button class="action-btn schedule-btn" (click)="depositCheck('scheduled')" [disabled]="selectedCheck?.is_physical">
                     📅 הפקדה מתוזמנת
                   </button>
                 </div>
