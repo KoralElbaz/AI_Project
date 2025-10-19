@@ -5,9 +5,16 @@ import { Observable } from 'rxjs';
 export interface Contact {
   id: number;
   name: string;
+  type: string;
+  id_number?: string;
   phone: string;
   email?: string;
-  address?: string;
+  bank_name?: string;
+  bank_branch?: string;
+  account_number?: string;
+  proxy?: string;
+  is_active: boolean;
+  is_business: boolean;
   created_at: string;
   updated_at: string;
 }
