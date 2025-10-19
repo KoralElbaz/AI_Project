@@ -86,27 +86,49 @@
 /* Top Controls */
 .top-controls {
   margin: 0 24px 16px 24px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
-.save-print-btn {
+.save-print-btn,
+.export-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: #333333;
+  color: white;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  padding: 8px 12px;
+  padding: 10px 16px;
   border-radius: 8px;
+  border: none;
   transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.save-print-btn {
+  background: #6DD400;
 }
 
 .save-print-btn:hover {
-  background: #F0F8FF;
+  background: #5BC000;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(109, 212, 0, 0.3);
 }
 
-.save-icon {
-  color: #6DD400;
+.export-btn {
+  background: #3B82F6;
+}
+
+.export-btn:hover {
+  background: #2563EB;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+}
+
+.save-icon,
+.export-icon {
   font-size: 16px;
 }
 
@@ -276,7 +298,7 @@
   border-left: 1px solid #E0E0E0;
 }
 
-.checks-table th:first-child {
+.checks-table th:first-child:not(.check-type) {
   border-left: none;
 }
 
@@ -290,14 +312,9 @@
   background: #F8F9FA;
 }
 
-.checks-table tbody tr.row-urgent {
-  background: #FEF2F2;
-  border-left: 4px solid #EF4444;
-}
-
-.checks-table tbody tr.row-warning {
-  background: #FFFBEB;
-  border-left: 4px solid #F59E0B;
+.checks-table tbody tr.row-digital {
+  background: #F0FFF4;
+  border-left: 4px solid #22C55E;
 }
 
 .checks-table td {
@@ -307,12 +324,99 @@
   border-left: 1px solid #E0E0E0;
 }
 
-.checks-table td:first-child {
+.checks-table td:first-child:not(.check-type) {
   border-left: none;
+}
+
+.checks-table th.check-type,
+.checks-table td.check-type {
+  border-right: 2px solid #E0E0E0 !important;
+  border-left: none;
+}
+
+/* Check Type Icons */
+.check-type {
+  width: 80px;
+  text-align: center;
+  border-right: 2px solid #E0E0E0;
+}
+
+/* Table Column Widths */
+.checks-table th.check-type,
+.checks-table td.check-type {
+  width: 80px;
+  min-width: 80px;
+  max-width: 80px;
+}
+
+.checks-table th.due-date,
+.checks-table td.due-date {
+  width: 120px;
+  min-width: 120px;
+  max-width: 120px;
+}
+
+.checks-table th.amount,
+.checks-table td.amount {
+  width: 100px;
+  min-width: 100px;
+  max-width: 100px;
+}
+
+.checks-table th.payee-name,
+.checks-table td.payee-name {
+  width: 200px;
+  min-width: 200px;
+  max-width: 200px;
+}
+
+.checks-table th.status,
+.checks-table td.status {
+  width: 140px;
+  min-width: 140px;
+  max-width: 140px;
+}
+
+.status-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.expand-arrow {
+  font-size: 14px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  color: #666;
+  font-weight: bold;
+}
+
+.expand-arrow.expanded {
+  transform: rotate(180deg);
+}
+
+.type-icon {
+  font-size: 20px;
+  display: inline-block;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.type-icon:hover {
+  transform: scale(1.2);
+}
+
+.physical-icon {
+  color: #FF6B35;
+}
+
+.digital-icon {
+  color: #4ECDC4;
 }
 
 .due-date {
   font-weight: 600;
+  border-left: 2px solid #E0E0E0 !important;
 }
 
 .amount {
