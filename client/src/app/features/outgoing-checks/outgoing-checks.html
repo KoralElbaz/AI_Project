@@ -120,8 +120,8 @@
             <td class="amount">{{ formatAmount(check.amount) }}</td>
             <td class="payee-name">{{ check.payee_name || 'לא זמין' }}</td>
             <td class="status">
-              <span class="status-badge" [ngClass]="getStatusClass(check.status)">
-                {{ getStatusLabel(check.status) }}
+              <span class="status-badge" [ngClass]="getStatusClass(getEffectiveStatus(check))">
+                {{ getStatusLabel(getEffectiveStatus(check)) }}
               </span>
             </td>
             <td class="marks">

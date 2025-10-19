@@ -120,8 +120,8 @@
             <td class="amount">{{ formatAmount(check.amount) }}</td>
             <td class="payer-name">{{ check.payer_name || 'לא זמין' }}</td>
             <td class="status">
-              <span class="status-badge" [ngClass]="getStatusClass(check.status)">
-                {{ getStatusLabel(check.status) }}
+              <span class="status-badge" [ngClass]="getStatusClass(getEffectiveStatus(check))">
+                {{ getStatusLabel(getEffectiveStatus(check)) }}
               </span>
             </td>
             <td class="marks">
@@ -185,16 +185,16 @@
                   <h4>פעולות</h4>
                   
                   <div *ngIf="selectedCheck?.is_physical" class="physical-check-notice">
-                    <span class="notice-icon">⚠️</span>
-                    <span class="notice-text">שק פיזי - פעולות מוגבלות למעקב בלבד</span>
+                    <span class="notice-icon">ℹ️</span>
+                    <span class="notice-text">שק פיזי - הוצאת חשבונית מותרת, פעולות הפקדה מוגבלות למעקב בלבד</span>
                   </div>
                   
-                  <button class="action-btn invoice-btn" (click)="issueInvoice()" [disabled]="selectedCheck?.is_physical">
+                  <button class="action-btn invoice-btn" (click)="issueInvoice()">
                     📄 הוצאת חשבונית
                   </button>
                   
-                  <!-- כפתורי הפקדה - רק למצב ממתין להפקדה -->
-                  <ng-container *ngIf="selectedCheck?.status === 'waiting_deposit'">
+                  <!-- כפתורי הפקדה - רק למצב ממתאן להפקדה ולא פג תוקף -->
+                  <ng-container *ngIf="selectedCheck?.status === 'waiting_deposit' && !isCheckExpired(selectedCheck)">
                     <button class="action-btn deposit-btn" 
                             (click)="depositCheck('immediate')" 
                             [disabled]="selectedCheck?.is_physical || !isCheckDepositable(selectedCheck)"
@@ -207,8 +207,8 @@
                     </button>
                   </ng-container>
                   
-                  <!-- הודעה עבור שיקים שכבר הופקדו/נפרעו -->
-                  <div *ngIf="selectedCheck?.status !== 'waiting_deposit' && !selectedCheck?.is_physical" class="status-notice">
+                  <!-- הודעה עבור שיקים שכבר הופקדו/נפרעו או פג תוקף -->
+                  <div *ngIf="(selectedCheck?.status !== 'waiting_deposit' || isCheckExpired(selectedCheck)) && !selectedCheck?.is_physical" class="status-notice">
                     <span class="notice-icon">ℹ️</span>
                     <span class="notice-text">
                       {{ getStatusNotice(selectedCheck) }}

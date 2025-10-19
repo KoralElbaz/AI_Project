@@ -63,6 +63,7 @@ export class OutgoingChecksComponent implements OnInit {
     { value: 'cleared', label: 'נפרע' },
     { value: 'bounced', label: 'נדחה' },
     { value: 'cancelled', label: 'בוטל' },
+    { value: 'in_collection', label: 'בהעברה' },
     { value: 'expired', label: 'פג תוקף' }
   ];
 
@@ -135,6 +136,26 @@ export class OutgoingChecksComponent implements OnInit {
       this.filters.max_amount ||
       this.filters.check_number
     );
+  }
+
+  // בדיקה אם שיק פג תוקף
+  isCheckExpired(check: any): boolean {
+    if (!check || check.is_physical) return false;
+    
+    const today = new Date();
+    const dueDate = new Date(check.due_date);
+    const sixMonthsFromDue = new Date(dueDate);
+    sixMonthsFromDue.setMonth(sixMonthsFromDue.getMonth() + 6);
+    
+    return today > sixMonthsFromDue;
+  }
+
+  // קבלת סטטוס מעודכן של השק
+  getEffectiveStatus(check: any): string {
+    if (this.isCheckExpired(check) && check.status === 'pending') {
+      return 'expired';
+    }
+    return check.status;
   }
 
   // ניווט

@@ -67,6 +67,8 @@ export class IncomingChecksComponent implements OnInit {
     { value: 'deposited', label: 'הופקד' },
     { value: 'cleared', label: 'נפרע' },
     { value: 'bounced', label: 'נדחה' },
+    { value: 'endorsed', label: 'הועבר' },
+    { value: 'expired', label: 'פג תוקף' },
     { value: 'cancelled', label: 'בוטל' }
   ];
 
@@ -141,6 +143,26 @@ export class IncomingChecksComponent implements OnInit {
     );
   }
 
+  // בדיקה אם שיק פג תוקף
+  isCheckExpired(check: any): boolean {
+    if (!check || check.is_physical) return false;
+    
+    const today = new Date();
+    const dueDate = new Date(check.due_date);
+    const sixMonthsFromDue = new Date(dueDate);
+    sixMonthsFromDue.setMonth(sixMonthsFromDue.getMonth() + 6);
+    
+    return today > sixMonthsFromDue;
+  }
+
+  // קבלת סטטוס מעודכן של השק
+  getEffectiveStatus(check: any): string {
+    if (this.isCheckExpired(check) && check.status === 'waiting_deposit') {
+      return 'expired';
+    }
+    return check.status;
+  }
+
   // ניווט
   goBackToDashboard() {
     this.router.navigate(['/dashboard']);
@@ -179,12 +201,7 @@ export class IncomingChecksComponent implements OnInit {
   issueInvoice() {
     if (!this.selectedCheck) return;
     
-    // בדיקה אם זה שק פיזי - הגבלת פעולות
-    if (this.selectedCheck.is_physical) {
-      alert('לא ניתן לבצע פעולות על שיק פיזי - זה מיועד למעקב בלבד');
-      return;
-    }
-    
+    // עבור שיקים פיזיים ודיגיטליים - הוצאת חשבונית מותרת
     const invoiceNumber = prompt('מספר חשבונית:');
     if (!invoiceNumber) return;
 
@@ -297,6 +314,11 @@ export class IncomingChecksComponent implements OnInit {
   // קבלת הודעה עבור סטטוס השק
   getStatusNotice(check: any): string {
     if (!check) return '';
+
+    // בדיקה אם השק פג תוקף
+    if (this.isCheckExpired(check) && check.status === 'waiting_deposit') {
+      return 'השק פג תוקף - לא ניתן לבצע הפקדה נוספת';
+    }
 
     switch (check.status) {
       case 'deposited':
