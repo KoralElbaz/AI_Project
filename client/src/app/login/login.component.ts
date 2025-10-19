@@ -52,8 +52,8 @@ export class LoginComponent implements OnInit {
       // סימולציה של תהליך הלוגין
       setTimeout(() => {
         this.isSubmitting = false;
-        // מעבר לדף הבית לאחר כניסה מוצלחת
-        this.router.navigate(['/home']);
+        // מעבר לדשבורד לאחר כניסה מוצלחת
+        this.router.navigate(['/dashboard']);
       }, 2000);
     } else {
       this.markFormGroupTouched();

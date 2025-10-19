@@ -1,25 +1,53 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { OutgoingChecksService, OutgoingCheck } from '../../services/outgoing-checks';
-import { ContactService, Contact } from '../../services/contact.service';
+import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+
+interface OutgoingCheck {
+  id: number;
+  check_number: string;
+  payee_contact_id: number;
+  payee_name: string;
+  payee_phone: string;
+  payee_email: string;
+  amount: number;
+  currency: string;
+  issue_date: string;
+  due_date: string;
+  status: 'pending' | 'cleared' | 'bounced' | 'cancelled' | 'in_collection' | 'expired';
+  is_series: boolean;
+  series_id?: number;
+  series_number?: number;
+  is_physical: boolean;
+  image_url?: string;
+  cancellation_reason?: string;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+  bank_name?: string;
+  bank_branch?: string;
+  account_number?: string;
+  proxy?: string;
+}
 
 @Component({
   selector: 'app-outgoing-checks',
+  standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './outgoing-checks.html',
   styleUrl: './outgoing-checks.css'
 })
 export class OutgoingChecksComponent implements OnInit {
   checks: OutgoingCheck[] = [];
-  contacts: Contact[] = [];
   loading = false;
   error = '';
+  selectedCheck: OutgoingCheck | null = null;
+  showModal = false;
   
   // פילטרים
   filters = {
     status: '',
-    payee_id: '',
     start_date: '',
     end_date: '',
     min_amount: '',
@@ -29,22 +57,28 @@ export class OutgoingChecksComponent implements OnInit {
   
   // סטטוסים
   statuses = [
-    { value: '', label: 'הכל' },
-    { value: 'pending', label: 'ממתין' },
+    { value: '', label: 'כל הסטטוסים' },
+    { value: 'pending', label: 'ממתין לפירעון' },
     { value: 'cleared', label: 'נפרע' },
     { value: 'bounced', label: 'נדחה' },
     { value: 'cancelled', label: 'בוטל' },
     { value: 'expired', label: 'פג תוקף' }
   ];
 
+  // תאריכים
+  dateRanges = [
+    { value: '7', label: '7 ימים' },
+    { value: '30', label: '30 ימים אחרונים' },
+    { value: '90', label: '90 ימים' }
+  ];
+
   constructor(
-    private outgoingChecksService: OutgoingChecksService,
-    private contactService: ContactService
+    private http: HttpClient,
+    private router: Router
   ) {}
 
   ngOnInit() {
     this.loadChecks();
-    this.loadContacts();
   }
 
   loadChecks() {
@@ -53,14 +87,13 @@ export class OutgoingChecksComponent implements OnInit {
     
     const params: any = {};
     if (this.filters.status) params.status = this.filters.status;
-    if (this.filters.payee_id) params.payee_id = parseInt(this.filters.payee_id);
     if (this.filters.start_date) params.start_date = this.filters.start_date;
     if (this.filters.end_date) params.end_date = this.filters.end_date;
     if (this.filters.min_amount) params.min_amount = parseFloat(this.filters.min_amount);
     if (this.filters.max_amount) params.max_amount = parseFloat(this.filters.max_amount);
     if (this.filters.sort) params.sort = this.filters.sort;
 
-    this.outgoingChecksService.getAllChecks(params).subscribe({
+    this.http.get<OutgoingCheck[]>('http://localhost:3000/api/outgoing-checks', { params }).subscribe({
       next: (data) => {
         this.checks = data;
         this.loading = false;
@@ -73,17 +106,6 @@ export class OutgoingChecksComponent implements OnInit {
     });
   }
 
-  loadContacts() {
-    this.contactService.getAllContacts().subscribe({
-      next: (response) => {
-        this.contacts = response.data || [];
-      },
-      error: (err) => {
-        console.error('Error loading contacts:', err);
-      }
-    });
-  }
-
   applyFilters() {
     this.loadChecks();
   }
@@ -91,7 +113,6 @@ export class OutgoingChecksComponent implements OnInit {
   clearFilters() {
     this.filters = {
       status: '',
-      payee_id: '',
       start_date: '',
       end_date: '',
       min_amount: '',
@@ -101,39 +122,68 @@ export class OutgoingChecksComponent implements OnInit {
     this.loadChecks();
   }
 
-  updateStatus(check: OutgoingCheck, newStatus: string) {
-    if (newStatus === 'cancelled') {
-      const reason = prompt('סיבת ביטול:');
-      if (!reason) return;
-      
-      this.outgoingChecksService.updateStatus(check.id, newStatus, reason).subscribe({
-        next: () => {
-          check.status = newStatus as any;
-          check.cancellation_reason = reason;
-        },
-        error: (err) => {
-          alert('שגיאה בעדכון סטטוס');
-          console.error('Error updating status:', err);
-        }
-      });
-    } else {
-      this.outgoingChecksService.updateStatus(check.id, newStatus).subscribe({
-        next: () => {
-          check.status = newStatus as any;
-        },
-        error: (err) => {
-          alert('שגיאה בעדכון סטטוס');
-          console.error('Error updating status:', err);
-        }
-      });
-    }
+  // ניווט
+  goBackToDashboard() {
+    this.router.navigate(['/dashboard']);
   }
 
-  duplicateCheck(check: OutgoingCheck) {
-    this.outgoingChecksService.duplicateCheck(check.id).subscribe({
-      next: (data) => {
-        // כאן נוכל לפתוח טופס יצירת שק חדש עם הנתונים
+  navigateToCreateCheck() {
+    this.router.navigate(['/create-check']);
+  }
+
+  // Modal
+  openCheckModal(check: OutgoingCheck) {
+    this.selectedCheck = check;
+    this.showModal = true;
+  }
+
+  closeModal() {
+    this.showModal = false;
+    this.selectedCheck = null;
+  }
+
+  // פעולות על שק
+  cancelCheck() {
+    if (!this.selectedCheck) return;
+    
+    if (this.selectedCheck.status !== 'pending') {
+      alert('ניתן לבטל רק שקים במצב ממתין לפירעון');
+      return;
+    }
+
+    const reason = prompt('סיבת ביטול:');
+    if (!reason) return;
+
+    this.http.put(`http://localhost:3000/api/outgoing-checks/${this.selectedCheck.id}/status`, {
+      status: 'cancelled',
+      cancellation_reason: reason
+    }).subscribe({
+      next: () => {
+        this.selectedCheck!.status = 'cancelled';
+        this.selectedCheck!.cancellation_reason = reason;
+        this.loadChecks(); // רענון הרשימה
+        alert('השק בוטל בהצלחה');
+      },
+      error: (err) => {
+        alert('שגיאה בביטול השק');
+        console.error('Error cancelling check:', err);
+      }
+    });
+  }
+
+  printCheck() {
+    if (!this.selectedCheck) return;
+    alert(`הדפסת שק ${this.selectedCheck.check_number}`);
+    // כאן תוכל להוסיף לוגיקה להדפסה
+  }
+
+  duplicateCheck() {
+    if (!this.selectedCheck) return;
+    
+    this.http.post(`http://localhost:3000/api/outgoing-checks/${this.selectedCheck.id}/duplicate`, {}).subscribe({
+      next: (data: any) => {
         alert('שק הועתק - ניתן ליצור שק חדש עם הנתונים');
+        // כאן תוכל לפתוח טופס יצירת שק חדש עם הנתונים
       },
       error: (err) => {
         alert('שגיאה בשכפול השק');
@@ -142,6 +192,7 @@ export class OutgoingChecksComponent implements OnInit {
     });
   }
 
+  // פורמט
   getStatusLabel(status: string): string {
     const statusObj = this.statuses.find(s => s.value === status);
     return statusObj ? statusObj.label : status;
@@ -165,54 +216,43 @@ export class OutgoingChecksComponent implements OnInit {
   formatAmount(amount: number): string {
     return new Intl.NumberFormat('he-IL', {
       style: 'currency',
-      currency: 'ILS'
+      currency: 'ILS',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
     }).format(amount);
   }
 
-  createNewCheck() {
-    // TODO: ניווט לטופס יצירת שק חדש
-    alert('פתיחת טופס יצירת שק חדש');
-  }
-
-  viewCheck(check: OutgoingCheck) {
-    // TODO: ניווט לצפייה בשק
-    alert(`צפייה בשק ${check.check_number}`);
-  }
-
-  cancelCheck(check: OutgoingCheck) {
-    if (check.status !== 'pending') {
-      alert('ניתן לבטל רק שקים במצב ממתין');
-      return;
+  // סימונים
+  getCheckMarks(check: OutgoingCheck): string[] {
+    const marks = [];
+    
+    if (check.status === 'cleared') {
+      marks.push('✅ נפרע');
+    } else if (check.status === 'bounced') {
+      marks.push('⚠️ חזר');
+    } else if (check.status === 'cancelled') {
+      marks.push('🚫 בוטל');
+    } else {
+      marks.push('❌ לא נפרע');
     }
-
-    const reason = prompt('סיבת ביטול:');
-    if (!reason) return;
-
-    this.outgoingChecksService.updateStatus(check.id, 'cancelled', reason).subscribe({
-      next: () => {
-        check.status = 'cancelled';
-        check.cancellation_reason = reason;
-        alert('השק בוטל בהצלחה');
-      },
-      error: (err) => {
-        alert('שגיאה בביטול השק');
-        console.error('Error cancelling check:', err);
-      }
-    });
+    
+    if (check.is_physical) {
+      marks.push('📄 פיזי');
+    } else {
+      marks.push('💻 דיגיטלי');
+    }
+    
+    return marks;
   }
 
+  // CSS classes
   getRowClass(check: OutgoingCheck): string {
     const dueDate = new Date(check.due_date);
     const today = new Date();
     const weekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
-    const monthFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
 
-    if (check.status === 'pending') {
-      if (dueDate <= weekFromNow) {
-        return 'row-urgent'; // אדום - מגיע השבוע
-      } else if (dueDate <= monthFromNow) {
-        return 'row-warning'; // כתום - מגיע החודש
-      }
+    if (check.status === 'pending' && dueDate <= weekFromNow) {
+      return 'row-urgent';
     }
 
     return 'row-normal';

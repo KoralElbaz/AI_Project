@@ -1,25 +1,57 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IncomingChecksService, IncomingCheck } from '../../services/incoming-checks';
-import { ContactService, Contact } from '../../services/contact.service';
+import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+
+interface IncomingCheck {
+  id: number;
+  check_number: string;
+  payer_contact_id: number;
+  payer_name: string;
+  payer_phone: string;
+  payer_email: string;
+  amount: number;
+  currency: string;
+  issue_date: string;
+  due_date: string;
+  status: 'waiting_deposit' | 'deposited' | 'cleared' | 'bounced' | 'endorsed' | 'expired' | 'cancelled';
+  deposited_at?: string;
+  deposit_scheduled_date?: string;
+  cleared_at?: string;
+  is_series: boolean;
+  series_id?: number;
+  series_number?: number;
+  is_physical: boolean;
+  image_url?: string;
+  invoice_number?: string;
+  invoice_issued_at?: string;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+  bank_name?: string;
+  bank_branch?: string;
+  account_number?: string;
+  proxy?: string;
+}
 
 @Component({
   selector: 'app-incoming-checks',
+  standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './incoming-checks.html',
   styleUrl: './incoming-checks.css'
 })
 export class IncomingChecksComponent implements OnInit {
   checks: IncomingCheck[] = [];
-  contacts: Contact[] = [];
   loading = false;
   error = '';
+  selectedCheck: IncomingCheck | null = null;
+  showModal = false;
   
   // פילטרים
   filters = {
     status: '',
-    payer_id: '',
     start_date: '',
     end_date: '',
     min_amount: '',
@@ -29,23 +61,28 @@ export class IncomingChecksComponent implements OnInit {
   
   // סטטוסים
   statuses = [
-    { value: '', label: 'הכל' },
+    { value: '', label: 'כל הסטטוסים' },
     { value: 'waiting_deposit', label: 'ממתין להפקדה' },
     { value: 'deposited', label: 'הופקד' },
     { value: 'cleared', label: 'נפרע' },
     { value: 'bounced', label: 'נדחה' },
-    { value: 'expired', label: 'פג תוקף' },
     { value: 'cancelled', label: 'בוטל' }
   ];
 
+  // תאריכים
+  dateRanges = [
+    { value: '7', label: '7 ימים' },
+    { value: '30', label: '30 ימים אחרונים' },
+    { value: '90', label: '90 ימים' }
+  ];
+
   constructor(
-    private incomingChecksService: IncomingChecksService,
-    private contactService: ContactService
+    private http: HttpClient,
+    private router: Router
   ) {}
 
   ngOnInit() {
     this.loadChecks();
-    this.loadContacts();
   }
 
   loadChecks() {
@@ -54,14 +91,13 @@ export class IncomingChecksComponent implements OnInit {
     
     const params: any = {};
     if (this.filters.status) params.status = this.filters.status;
-    if (this.filters.payer_id) params.payer_id = parseInt(this.filters.payer_id);
     if (this.filters.start_date) params.start_date = this.filters.start_date;
     if (this.filters.end_date) params.end_date = this.filters.end_date;
     if (this.filters.min_amount) params.min_amount = parseFloat(this.filters.min_amount);
     if (this.filters.max_amount) params.max_amount = parseFloat(this.filters.max_amount);
     if (this.filters.sort) params.sort = this.filters.sort;
 
-    this.incomingChecksService.getAllChecks(params).subscribe({
+    this.http.get<IncomingCheck[]>('http://localhost:3000/api/incoming-checks', { params }).subscribe({
       next: (data) => {
         this.checks = data;
         this.loading = false;
@@ -74,17 +110,6 @@ export class IncomingChecksComponent implements OnInit {
     });
   }
 
-  loadContacts() {
-    this.contactService.getAllContacts().subscribe({
-      next: (response) => {
-        this.contacts = response.data || [];
-      },
-      error: (err) => {
-        console.error('Error loading contacts:', err);
-      }
-    });
-  }
-
   applyFilters() {
     this.loadChecks();
   }
@@ -92,7 +117,6 @@ export class IncomingChecksComponent implements OnInit {
   clearFilters() {
     this.filters = {
       status: '',
-      payer_id: '',
       start_date: '',
       end_date: '',
       min_amount: '',
@@ -102,49 +126,40 @@ export class IncomingChecksComponent implements OnInit {
     this.loadChecks();
   }
 
-  depositCheck(check: IncomingCheck) {
-    if (check.status !== 'waiting_deposit') {
-      alert('ניתן להפקיד רק שקים במצב "ממתין להפקדה"');
-      return;
-    }
-
-    this.incomingChecksService.depositCheck(check.id).subscribe({
-      next: () => {
-        check.status = 'deposited';
-        check.deposited_at = new Date().toISOString();
-        alert('השק הופקד בהצלחה');
-      },
-      error: (err) => {
-        alert(err.error?.error || 'שגיאה בהפקדת השק');
-        console.error('Error depositing check:', err);
-      }
-    });
+  // ניווט
+  goBackToDashboard() {
+    this.router.navigate(['/dashboard']);
   }
 
-  scheduleDeposit(check: IncomingCheck) {
-    const depositDate = prompt('תאריך הפקדה מתוזמן (YYYY-MM-DD):');
-    if (!depositDate) return;
-
-    this.incomingChecksService.scheduleDeposit(check.id, depositDate).subscribe({
-      next: () => {
-        check.deposit_scheduled_date = depositDate;
-        alert('הפקדה מתוזמנת בהצלחה');
-      },
-      error: (err) => {
-        alert('שגיאה בתזמון ההפקדה');
-        console.error('Error scheduling deposit:', err);
-      }
-    });
+  navigateToCreateCheck() {
+    this.router.navigate(['/create-check']);
   }
 
-  issueInvoice(check: IncomingCheck) {
+  // Modal
+  openCheckModal(check: IncomingCheck) {
+    this.selectedCheck = check;
+    this.showModal = true;
+  }
+
+  closeModal() {
+    this.showModal = false;
+    this.selectedCheck = null;
+  }
+
+  // פעולות על שק
+  issueInvoice() {
+    if (!this.selectedCheck) return;
+    
     const invoiceNumber = prompt('מספר חשבונית:');
     if (!invoiceNumber) return;
 
-    this.incomingChecksService.issueInvoice(check.id, invoiceNumber).subscribe({
+    this.http.post(`http://localhost:3000/api/incoming-checks/${this.selectedCheck.id}/invoice`, {
+      invoice_number: invoiceNumber
+    }).subscribe({
       next: () => {
-        check.invoice_number = invoiceNumber;
-        check.invoice_issued_at = new Date().toISOString();
+        this.selectedCheck!.invoice_number = invoiceNumber;
+        this.selectedCheck!.invoice_issued_at = new Date().toISOString();
+        this.loadChecks(); // רענון הרשימה
         alert('חשבונית הונפקה בהצלחה');
       },
       error: (err) => {
@@ -154,33 +169,50 @@ export class IncomingChecksComponent implements OnInit {
     });
   }
 
-  updateStatus(check: IncomingCheck, newStatus: string) {
-    if (newStatus === 'cancelled') {
-      const reason = prompt('סיבת ביטול:');
-      if (!reason) return;
-      
-      this.incomingChecksService.updateStatus(check.id, newStatus, reason).subscribe({
-        next: () => {
-          check.status = newStatus as any;
-        },
-        error: (err) => {
-          alert('שגיאה בעדכון סטטוס');
-          console.error('Error updating status:', err);
-        }
-      });
-    } else {
-      this.incomingChecksService.updateStatus(check.id, newStatus).subscribe({
-        next: () => {
-          check.status = newStatus as any;
-        },
-        error: (err) => {
-          alert('שגיאה בעדכון סטטוס');
-          console.error('Error updating status:', err);
-        }
-      });
+  depositCheck() {
+    if (!this.selectedCheck) return;
+    
+    if (this.selectedCheck.status !== 'waiting_deposit') {
+      alert('ניתן להפקיד רק שקים במצב ממתין להפקדה');
+      return;
     }
+
+    this.http.put(`http://localhost:3000/api/incoming-checks/${this.selectedCheck.id}/deposit`, {}).subscribe({
+      next: () => {
+        this.selectedCheck!.status = 'deposited';
+        this.selectedCheck!.deposited_at = new Date().toISOString();
+        this.loadChecks(); // רענון הרשימה
+        alert('השק הופקד בהצלחה');
+      },
+      error: (err) => {
+        alert('שגיאה בהפקדת השק');
+        console.error('Error depositing check:', err);
+      }
+    });
   }
 
+  scheduleDeposit() {
+    if (!this.selectedCheck) return;
+    
+    const depositDate = prompt('תאריך הפקדה (YYYY-MM-DD):');
+    if (!depositDate) return;
+
+    this.http.put(`http://localhost:3000/api/incoming-checks/${this.selectedCheck.id}/schedule-deposit`, {
+      deposit_date: depositDate
+    }).subscribe({
+      next: () => {
+        this.selectedCheck!.deposit_scheduled_date = depositDate;
+        this.loadChecks(); // רענון הרשימה
+        alert('הפקדה מתוזמנת בהצלחה');
+      },
+      error: (err) => {
+        alert('שגיאה בתזמון ההפקדה');
+        console.error('Error scheduling deposit:', err);
+      }
+    });
+  }
+
+  // פורמט
   getStatusLabel(status: string): string {
     const statusObj = this.statuses.find(s => s.value === status);
     return statusObj ? statusObj.label : status;
@@ -205,55 +237,47 @@ export class IncomingChecksComponent implements OnInit {
   formatAmount(amount: number): string {
     return new Intl.NumberFormat('he-IL', {
       style: 'currency',
-      currency: 'ILS'
+      currency: 'ILS',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
     }).format(amount);
   }
 
-  createNewCheck() {
-    // TODO: ניווט לטופס יצירת שק חדש
-    alert('פתיחת טופס יצירת שק נכנס חדש');
+  // סימונים
+  getCheckMarks(check: IncomingCheck): string[] {
+    const marks = [];
+    
+    if (check.status === 'cleared') {
+      marks.push('✅ נפרע');
+    } else if (check.status === 'bounced') {
+      marks.push('⚠️ חזר');
+    } else if (check.status === 'cancelled') {
+      marks.push('🚫 בוטל');
+    } else if (check.status === 'deposited') {
+      marks.push('📥 הופקד');
+    } else {
+      marks.push('⏳ לא הופקד');
+    }
+    
+    if (check.is_physical) {
+      marks.push('📄 פיזי');
+    } else {
+      marks.push('💻 דיגיטלי');
+    }
+    
+    return marks;
   }
 
-  viewCheck(check: IncomingCheck) {
-    // TODO: ניווט לצפייה בשק
-    alert(`צפייה בשק ${check.check_number}`);
-  }
-
+  // CSS classes
   getRowClass(check: IncomingCheck): string {
     const dueDate = new Date(check.due_date);
     const today = new Date();
     const weekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
-    const monthFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
 
-    if (check.status === 'waiting_deposit' || check.status === 'deposited') {
-      if (dueDate <= weekFromNow) {
-        return 'row-urgent'; // אדום - מגיע השבוע
-      } else if (dueDate <= monthFromNow) {
-        return 'row-warning'; // כתום - מגיע החודש
-      }
+    if (check.status === 'waiting_deposit' && dueDate <= weekFromNow) {
+      return 'row-urgent';
     }
 
     return 'row-normal';
-  }
-
-  cancelCheck(check: IncomingCheck) {
-    if (check.status === 'cancelled') {
-      alert('השק כבר בוטל');
-      return;
-    }
-
-    const reason = prompt('סיבת ביטול:');
-    if (!reason) return;
-
-    this.incomingChecksService.updateStatus(check.id, 'cancelled', reason).subscribe({
-      next: () => {
-        check.status = 'cancelled';
-        alert('השק בוטל בהצלחה');
-      },
-      error: (err) => {
-        alert('שגיאה בביטול השק');
-        console.error('Error cancelling check:', err);
-      }
-    });
   }
 }

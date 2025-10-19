@@ -1,12 +1,27 @@
 <div class="outgoing-checks-container">
-  <div class="header">
-    <h2>שקים יוצאים</h2>
-    <button class="btn btn-primary" (click)="createNewCheck()">שק יוצא חדש</button>
-  </div>
+  <!-- Header -->
+  <header class="page-header">
+    <div class="header-content">
+      <div class="header-left">
+        <button class="back-btn" (click)="goBackToDashboard()">
+          ← חזרה ללובי
+        </button>
+      </div>
+      <div class="header-center">
+        <h1>שיקים יוצאים</h1>
+        <p>כל התשלומים לספקים</p>
+      </div>
+      <div class="header-right">
+        <button class="create-btn" (click)="navigateToCreateCheck()">
+          ✏️ צור שק חדש
+        </button>
+      </div>
+    </div>
+  </header>
 
-  <!-- פילטרים -->
+  <!-- Filters -->
   <div class="filters-section">
-    <div class="filters-grid">
+    <div class="filters-row">
       <div class="filter-group">
         <label>סטטוס:</label>
         <select [(ngModel)]="filters.status" (change)="applyFilters()">
@@ -15,104 +30,169 @@
           </option>
         </select>
       </div>
-
+      
       <div class="filter-group">
-        <label>מוטב:</label>
-        <select [(ngModel)]="filters.payee_id" (change)="applyFilters()">
-          <option value="">הכל</option>
-          <option *ngFor="let contact of contacts" [value]="contact.id">
-            {{ contact.name }}
+        <label>תקופה:</label>
+        <select [(ngModel)]="filters.start_date" (change)="applyFilters()">
+          <option value="">כל התקופות</option>
+          <option *ngFor="let range of dateRanges" [value]="range.value">
+            {{ range.label }}
           </option>
         </select>
       </div>
-
+      
       <div class="filter-group">
-        <label>מתאריך:</label>
-        <input type="date" [(ngModel)]="filters.start_date" (change)="applyFilters()">
-      </div>
-
-      <div class="filter-group">
-        <label>עד תאריך:</label>
-        <input type="date" [(ngModel)]="filters.end_date" (change)="applyFilters()">
-      </div>
-
-      <div class="filter-group">
-        <label>סכום מינימלי:</label>
+        <label>מינימום סכום:</label>
         <input type="number" [(ngModel)]="filters.min_amount" (change)="applyFilters()" placeholder="0">
       </div>
-
+      
       <div class="filter-group">
-        <label>סכום מקסימלי:</label>
+        <label>מקסימום סכום:</label>
         <input type="number" [(ngModel)]="filters.max_amount" (change)="applyFilters()" placeholder="999999">
       </div>
-
-      <div class="filter-group">
-        <label>מיון:</label>
-        <select [(ngModel)]="filters.sort" (change)="applyFilters()">
-          <option value="created_at">תאריך יצירה</option>
-          <option value="due_date">תאריך פירעון</option>
-          <option value="amount">סכום</option>
-        </select>
-      </div>
-
+      
       <div class="filter-actions">
-        <button class="btn btn-secondary" (click)="clearFilters()">נקה פילטרים</button>
+        <button class="search-btn" (click)="applyFilters()">
+          🔍 חפש
+        </button>
+        <button class="clear-btn" (click)="clearFilters()">
+          נקה פילטרים
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- טבלת שקים -->
-  <div class="checks-table-container">
-    <div *ngIf="loading" class="loading">טוען שקים...</div>
-    <div *ngIf="error" class="error">{{ error }}</div>
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="loading">
+    <div class="loading-spinner"></div>
+    <p>טוען שקים יוצאים...</p>
+  </div>
 
-    <table *ngIf="!loading && !error" class="checks-table">
+  <!-- Error State -->
+  <div class="error-container" *ngIf="error">
+    <div class="error-message">
+      <span class="error-icon">⚠️</span>
+      <p>{{ error }}</p>
+      <button class="retry-btn" (click)="loadChecks()">נסה שוב</button>
+    </div>
+  </div>
+
+  <!-- Checks Table -->
+  <div class="table-container" *ngIf="!loading && !error">
+    <table class="checks-table">
       <thead>
         <tr>
-          <th>מספר שק</th>
-          <th>מוטב</th>
-          <th>סכום</th>
           <th>תאריך פירעון</th>
+          <th>סכום</th>
+          <th>שם המוטב</th>
           <th>סטטוס</th>
-          <th>פעולות</th>
+          <th>סימונים</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let check of checks" [class]="getRowClass(check)">
-          <td>
-            {{ check.check_number }}
-            <span *ngIf="check.is_series" class="series-indicator" title="שק חוזר">
-              🔄
-            </span>
-            <span *ngIf="check.is_physical" class="physical-indicator" title="שק פיזי">
-              📷
-            </span>
-          </td>
-          <td>{{ check.payee_name || 'לא זמין' }}</td>
-          <td>{{ formatAmount(check.amount) }}</td>
-          <td>{{ formatDate(check.due_date) }}</td>
-          <td>
-            <span [class]="'status-badge ' + getStatusClass(check.status)">
+        <tr 
+          *ngFor="let check of checks" 
+          class="check-row"
+          [ngClass]="getRowClass(check)"
+          (click)="openCheckModal(check)">
+          <td class="due-date">{{ formatDate(check.due_date) }}</td>
+          <td class="amount">{{ formatAmount(check.amount) }}</td>
+          <td class="payee-name">{{ check.payee_name || 'לא זמין' }}</td>
+          <td class="status">
+            <span class="status-badge" [ngClass]="getStatusClass(check.status)">
               {{ getStatusLabel(check.status) }}
             </span>
           </td>
-          <td class="actions">
-            <button class="btn btn-sm btn-info" (click)="viewCheck(check)">צפייה</button>
-            <select class="status-select" (change)="updateStatus(check, $any($event.target).value)">
-              <option value="">עדכון סטטוס</option>
-              <option *ngFor="let status of statuses.slice(1)" [value]="status.value">
-                {{ status.label }}
-              </option>
-            </select>
-            <button class="btn btn-sm btn-warning" (click)="duplicateCheck(check)">שכפול</button>
-            <button class="btn btn-sm btn-danger" (click)="cancelCheck(check)">ביטול</button>
+          <td class="marks">
+            <span *ngFor="let mark of getCheckMarks(check); let last = last">
+              {{ mark }}<span *ngIf="!last"> · </span>
+            </span>
           </td>
         </tr>
       </tbody>
     </table>
 
-    <div *ngIf="!loading && !error && checks.length === 0" class="no-data">
-      לא נמצאו שקים יוצאים
+    <!-- No Data -->
+    <div class="no-data" *ngIf="checks.length === 0">
+      <div class="no-data-icon">📋</div>
+      <h3>לא נמצאו שקים יוצאים</h3>
+      <p>אין שקים יוצאים התואמים לפילטרים שנבחרו</p>
+      <button class="create-btn" (click)="navigateToCreateCheck()">
+        צור שק יוצא ראשון
+      </button>
+    </div>
+  </div>
+
+  <!-- Check Details Modal -->
+  <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>פרטי שק יוצא</h2>
+        <button class="close-btn" (click)="closeModal()">×</button>
+      </div>
+      
+      <div class="modal-body" *ngIf="selectedCheck">
+        <!-- Check Visual -->
+        <div class="check-visual">
+          <div class="check-header">
+            <div class="bank-name">שק בנק</div>
+            <div class="bank-name-en">Bank Check</div>
+          </div>
+          
+          <div class="check-details">
+            <div class="check-field">
+              <label>בנק:</label>
+              <span>{{ selectedCheck.bank_name || 'הפועלים' }}</span>
+            </div>
+            <div class="check-field">
+              <label>סניף:</label>
+              <span>{{ selectedCheck.bank_branch || '123' }}</span>
+            </div>
+            <div class="check-field">
+              <label>תאריך:</label>
+              <span>{{ formatDate(selectedCheck.due_date) }}</span>
+            </div>
+            <div class="check-field">
+              <label>שלם לפי הוראת:</label>
+              <span class="payee-name-large">{{ selectedCheck.payee_name || 'לא זמין' }}</span>
+            </div>
+            <div class="amount-section">
+              <div class="amount-label">סכום:</div>
+              <div class="amount-value">{{ formatAmount(selectedCheck.amount) }}</div>
+            </div>
+            <div class="check-field">
+              <label>מספר שק:</label>
+              <span>{{ selectedCheck.check_number }}</span>
+            </div>
+            <div class="check-type">
+              <span class="type-badge" [ngClass]="selectedCheck.is_physical ? 'physical' : 'digital'">
+                {{ selectedCheck.is_physical ? '📄 שק פיזי' : '💻 שק דיגיטלי' }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="modal-actions">
+          <h3>פעולות</h3>
+          
+          <button class="action-btn cancel-btn" (click)="cancelCheck()">
+            🚫 ביטול שק
+          </button>
+          
+          <button class="action-btn print-btn" (click)="printCheck()">
+            🖨️ הדפסה
+          </button>
+          
+          <button class="action-btn duplicate-btn" (click)="duplicateCheck()">
+            📋 שכפול שק
+          </button>
+          
+          <button class="action-btn close-btn" (click)="closeModal()">
+            סגור
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
