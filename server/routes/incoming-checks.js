@@ -413,6 +413,62 @@ router.put('/:id/status', (req, res) => {
   });
 });
 
+// POST /api/incoming-checks/physical - הוספת שיק פיזי
+router.post('/physical', (req, res) => {
+  const { 
+    check_number, 
+    payer_name, 
+    amount, 
+    due_date, 
+    bank_name, 
+    bank_branch, 
+    notes 
+  } = req.body;
+  
+  // ולידציות
+  if (!check_number || !payer_name || !amount || !due_date) {
+    return res.status(400).json({ error: 'כל השדות החובה נדרשים' });
+  }
+  
+  if (amount <= 0) {
+    return res.status(400).json({ error: 'הסכום חייב להיות גדול מ-0' });
+  }
+  
+  // בדיקה שמספר השק ייחודי
+  db.get('SELECT id FROM incoming_checks WHERE check_number = ?', [check_number], (err, row) => {
+    if (err) {
+      console.error('Error checking check number uniqueness:', err);
+      return res.status(500).json({ error: 'שגיאה בבדיקת מספר השק' });
+    }
+    
+    if (row) {
+      return res.status(400).json({ error: 'מספר השק כבר קיים במערכת' });
+    }
+    
+    // יצירת השק הפיזי - ללא קשר ל-contact
+    const query = `
+      INSERT INTO incoming_checks 
+      (check_number, payer_contact_id, payer_name, amount, currency, issue_date, due_date, is_physical, bank_name, bank_branch, notes, status)
+      VALUES (?, NULL, ?, ?, 'ILS', CURRENT_DATE, ?, 1, ?, ?, ?, 'waiting_deposit')
+    `;
+    
+    db.run(query, [check_number, payer_name, amount, due_date, bank_name, bank_branch, notes], function(err) {
+      if (err) {
+        console.error('Error creating physical incoming check:', err);
+        return res.status(500).json({ error: 'שגיאה ביצירת השק הפיזי' });
+      }
+      
+      res.status(201).json({ 
+        id: this.lastID,
+        message: 'שק פיזי נוסף בהצלחה',
+        check_number,
+        amount,
+        is_physical: true
+      });
+    });
+  });
+});
+
 // GET /api/incoming-checks/stats - סטטיסטיקות
 router.get('/stats', (req, res) => {
   const queries = {

@@ -131,6 +131,16 @@ export class OutgoingChecksComponent implements OnInit {
     this.router.navigate(['/create-check']);
   }
 
+  addPhysicalCheck() {
+    // פתיחת מסך יצירת שק עם סוג פיזי
+    this.router.navigate(['/create-check'], { 
+      queryParams: { 
+        type: 'outgoing', 
+        isPhysical: 'true' 
+      } 
+    });
+  }
+
   // Drawer
   toggleRowExpansion(check: OutgoingCheck) {
     if (this.expandedRowId === check.id) {
@@ -149,6 +159,12 @@ export class OutgoingChecksComponent implements OnInit {
   // פעולות על שק
   cancelCheck() {
     if (!this.selectedCheck) return;
+    
+    // בדיקה אם זה שק פיזי - הגבלת פעולות
+    if (this.selectedCheck.is_physical) {
+      alert('לא ניתן לבצע פעולות על שיק פיזי - זה מיועד למעקב בלבד');
+      return;
+    }
     
     if (this.selectedCheck.status !== 'pending') {
       alert('ניתן לבטל רק שקים במצב ממתין לפירעון');
@@ -177,12 +193,24 @@ export class OutgoingChecksComponent implements OnInit {
 
   printCheck() {
     if (!this.selectedCheck) return;
+    
+    // בדיקה אם זה שק פיזי - הגבלת פעולות
+    if (this.selectedCheck.is_physical) {
+      alert('לא ניתן לבצע פעולות על שיק פיזי - זה מיועד למעקב בלבד');
+      return;
+    }
     alert(`הדפסת שק ${this.selectedCheck.check_number}`);
     // כאן תוכל להוסיף לוגיקה להדפסה
   }
 
   duplicateCheck() {
     if (!this.selectedCheck) return;
+    
+    // בדיקה אם זה שק פיזי - הגבלת פעולות
+    if (this.selectedCheck.is_physical) {
+      alert('לא ניתן לבצע פעולות על שיק פיזי - זה מיועד למעקב בלבד');
+      return;
+    }
     
     this.http.post(`http://localhost:3000/api/outgoing-checks/${this.selectedCheck.id}/duplicate`, {}).subscribe({
       next: (data: any) => {

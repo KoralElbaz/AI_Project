@@ -130,4 +130,17 @@ export class IncomingChecksService {
   getStats(): Observable<IncomingCheckStats> {
     return this.http.get<IncomingCheckStats>(`${this.apiUrl}/stats`);
   }
+
+  // יצירת שק פיזי נכנס
+  createPhysicalCheck(check: {
+    check_number: string;
+    payer_name: string;
+    amount: number;
+    due_date: string;
+    bank_name?: string;
+    bank_branch?: string;
+    notes?: string;
+  }): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/physical`, check);
+  }
 }

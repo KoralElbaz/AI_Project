@@ -135,6 +135,16 @@ export class IncomingChecksComponent implements OnInit {
     this.router.navigate(['/create-check']);
   }
 
+  addPhysicalCheck() {
+    // פתיחת מסך יצירת שק עם סוג פיזי
+    this.router.navigate(['/create-check'], { 
+      queryParams: { 
+        type: 'incoming', 
+        isPhysical: 'true' 
+      } 
+    });
+  }
+
   // Drawer
   toggleRowExpansion(check: IncomingCheck) {
     if (this.expandedRowId === check.id) {
@@ -153,6 +163,12 @@ export class IncomingChecksComponent implements OnInit {
   // פעולות על שק
   issueInvoice() {
     if (!this.selectedCheck) return;
+    
+    // בדיקה אם זה שק פיזי - הגבלת פעולות
+    if (this.selectedCheck.is_physical) {
+      alert('לא ניתן לבצע פעולות על שיק פיזי - זה מיועד למעקב בלבד');
+      return;
+    }
     
     const invoiceNumber = prompt('מספר חשבונית:');
     if (!invoiceNumber) return;
@@ -175,6 +191,12 @@ export class IncomingChecksComponent implements OnInit {
 
   depositCheck(type: 'immediate' | 'scheduled' = 'immediate') {
     if (!this.selectedCheck) return;
+    
+    // בדיקה אם זה שק פיזי - הגבלת פעולות
+    if (this.selectedCheck.is_physical) {
+      alert('לא ניתן לבצע פעולות על שיק פיזי - זה מיועד למעקב בלבד');
+      return;
+    }
     
     if (this.selectedCheck.status !== 'waiting_deposit') {
       alert('ניתן להפקיד רק שקים במצב ממתין להפקדה');

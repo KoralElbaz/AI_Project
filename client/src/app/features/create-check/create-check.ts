@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { OutgoingChecksService } from '../../services/outgoing-checks';
 import { IncomingChecksService } from '../../services/incoming-checks';
 import { ContactService, Contact } from '../../services/contact.service';
@@ -28,7 +28,12 @@ export class CreateCheckComponent implements OnInit {
     due_date: '',
     is_physical: false,
     notes: '',
-    deposit_immediately: false // רק לשקים נכנסים
+    deposit_immediately: false, // רק לשקים נכנסים
+    // שדות לשיקים פיזיים
+    payer_name: '', // לשקים נכנסים פיזיים
+    payee_name: '', // לשקים יוצאים פיזיים
+    bank_name: '',
+    bank_branch: ''
   };
 
   // טופס סדרת שקים
@@ -46,12 +51,26 @@ export class CreateCheckComponent implements OnInit {
     private outgoingChecksService: OutgoingChecksService,
     private incomingChecksService: IncomingChecksService,
     private contactService: ContactService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit() {
     this.loadContacts();
     this.initializeForm();
+    this.handleQueryParams();
+  }
+
+  handleQueryParams() {
+    this.route.queryParams.subscribe(params => {
+      if (params['type']) {
+        this.checkType = params['type'] as 'outgoing' | 'incoming';
+      }
+      if (params['isPhysical'] === 'true') {
+        this.checkForm.is_physical = true;
+        this.isSeries = false; // שיקים פיזיים רק בודדים
+      }
+    });
   }
 
   initializeForm() {
@@ -89,7 +108,11 @@ export class CreateCheckComponent implements OnInit {
       due_date: new Date().toISOString().split('T')[0],
       is_physical: false,
       notes: '',
-      deposit_immediately: false
+      deposit_immediately: false,
+      payer_name: '',
+      payee_name: '',
+      bank_name: '',
+      bank_branch: ''
     };
     this.seriesForm = {
       contact_id: '',
@@ -122,19 +145,38 @@ export class CreateCheckComponent implements OnInit {
       this.error = 'מספר שק נדרש';
       return false;
     }
-    if (!this.checkForm.contact_id) {
-      this.error = 'יש לבחור איש קשר';
-      return false;
+    
+    // עבור שיקים פיזיים, בדיקה של שם המשלם/המוטב
+    if (this.checkForm.is_physical) {
+      if (this.checkType === 'incoming' && !this.checkForm.payer_name) {
+        this.error = 'שם המשלם נדרש לשק פיזי';
+        return false;
+      }
+      if (this.checkType === 'outgoing' && !this.checkForm.payee_name) {
+        this.error = 'שם המוטב נדרש לשק פיזי';
+        return false;
+      }
+    } else {
+      // עבור שיקים דיגיטליים, בדיקה של איש קשר
+      if (!this.checkForm.contact_id) {
+        this.error = 'יש לבחור איש קשר';
+        return false;
+      }
     }
+    
     if (!this.checkForm.amount || parseFloat(this.checkForm.amount) <= 0) {
       this.error = 'סכום חייב להיות גדול מ-0';
       return false;
     }
-    if (!this.checkForm.issue_date || !this.checkForm.due_date) {
-      this.error = 'תאריכי הנפקה ופירעון נדרשים';
+    if (!this.checkForm.due_date) {
+      this.error = 'תאריך פירעון נדרש';
       return false;
     }
-    if (new Date(this.checkForm.due_date) < new Date(this.checkForm.issue_date)) {
+    if (!this.checkForm.is_physical && !this.checkForm.issue_date) {
+      this.error = 'תאריך הנפקה נדרש לשקים דיגיטליים';
+      return false;
+    }
+    if (!this.checkForm.is_physical && this.checkForm.issue_date && new Date(this.checkForm.due_date) < new Date(this.checkForm.issue_date)) {
       this.error = 'תאריך הפירעון חייב להיות אחרי תאריך ההנפקה';
       return false;
     }
@@ -184,53 +226,109 @@ export class CreateCheckComponent implements OnInit {
 
   createSingleCheck() {
     if (this.checkType === 'outgoing') {
-      const checkData = {
-        check_number: this.checkForm.check_number,
-        payee_contact_id: parseInt(this.checkForm.contact_id),
-        amount: parseFloat(this.checkForm.amount),
-        issue_date: this.checkForm.issue_date,
-        due_date: this.checkForm.due_date,
-        is_physical: this.checkForm.is_physical,
-        notes: this.checkForm.notes
-      };
+      if (this.checkForm.is_physical) {
+        // יצירת שק פיזי יוצא
+        const checkData = {
+          check_number: this.checkForm.check_number,
+          payee_name: this.checkForm.payee_name,
+          amount: parseFloat(this.checkForm.amount),
+          due_date: this.checkForm.due_date,
+          bank_name: this.checkForm.bank_name,
+          bank_branch: this.checkForm.bank_branch,
+          notes: this.checkForm.notes
+        };
 
-      this.outgoingChecksService.createCheck(checkData).subscribe({
-        next: (response) => {
-          this.success = 'שק יוצא נוצר בהצלחה';
-          this.loading = false;
-          setTimeout(() => {
-            this.router.navigate(['/outgoing-checks']);
-          }, 2000);
-        },
-        error: (err) => {
-          this.error = err.error?.error || 'שגיאה ביצירת השק';
-          this.loading = false;
-        }
-      });
+        this.outgoingChecksService.createPhysicalCheck(checkData).subscribe({
+          next: (response) => {
+            this.success = 'שק פיזי יוצא נוצר בהצלחה';
+            this.loading = false;
+            setTimeout(() => {
+              this.router.navigate(['/outgoing-checks']);
+            }, 2000);
+          },
+          error: (err) => {
+            this.error = err.error?.error || 'שגיאה ביצירת השק הפיזי';
+            this.loading = false;
+          }
+        });
+      } else {
+        // יצירת שק דיגיטלי יוצא
+        const checkData = {
+          check_number: this.checkForm.check_number,
+          payee_contact_id: parseInt(this.checkForm.contact_id),
+          amount: parseFloat(this.checkForm.amount),
+          issue_date: this.checkForm.issue_date,
+          due_date: this.checkForm.due_date,
+          is_physical: this.checkForm.is_physical,
+          notes: this.checkForm.notes
+        };
+
+        this.outgoingChecksService.createCheck(checkData).subscribe({
+          next: (response) => {
+            this.success = 'שק יוצא נוצר בהצלחה';
+            this.loading = false;
+            setTimeout(() => {
+              this.router.navigate(['/outgoing-checks']);
+            }, 2000);
+          },
+          error: (err) => {
+            this.error = err.error?.error || 'שגיאה ביצירת השק';
+            this.loading = false;
+          }
+        });
+      }
     } else {
-      const checkData = {
-        check_number: this.checkForm.check_number,
-        payer_contact_id: parseInt(this.checkForm.contact_id),
-        amount: parseFloat(this.checkForm.amount),
-        issue_date: this.checkForm.issue_date,
-        due_date: this.checkForm.due_date,
-        is_physical: this.checkForm.is_physical,
-        notes: this.checkForm.notes
-      };
+      if (this.checkForm.is_physical) {
+        // יצירת שק פיזי נכנס
+        const checkData = {
+          check_number: this.checkForm.check_number,
+          payer_name: this.checkForm.payer_name,
+          amount: parseFloat(this.checkForm.amount),
+          due_date: this.checkForm.due_date,
+          bank_name: this.checkForm.bank_name,
+          bank_branch: this.checkForm.bank_branch,
+          notes: this.checkForm.notes
+        };
 
-      this.incomingChecksService.createCheck(checkData).subscribe({
-        next: (response) => {
-          this.success = 'שק נכנס נוצר בהצלחה';
-          this.loading = false;
-          setTimeout(() => {
-            this.router.navigate(['/incoming-checks']);
-          }, 2000);
-        },
-        error: (err) => {
-          this.error = err.error?.error || 'שגיאה ביצירת השק';
-          this.loading = false;
-        }
-      });
+        this.incomingChecksService.createPhysicalCheck(checkData).subscribe({
+          next: (response) => {
+            this.success = 'שק פיזי נכנס נוצר בהצלחה';
+            this.loading = false;
+            setTimeout(() => {
+              this.router.navigate(['/incoming-checks']);
+            }, 2000);
+          },
+          error: (err) => {
+            this.error = err.error?.error || 'שגיאה ביצירת השק הפיזי';
+            this.loading = false;
+          }
+        });
+      } else {
+        // יצירת שק דיגיטלי נכנס
+        const checkData = {
+          check_number: this.checkForm.check_number,
+          payer_contact_id: parseInt(this.checkForm.contact_id),
+          amount: parseFloat(this.checkForm.amount),
+          issue_date: this.checkForm.issue_date,
+          due_date: this.checkForm.due_date,
+          is_physical: this.checkForm.is_physical,
+          notes: this.checkForm.notes
+        };
+
+        this.incomingChecksService.createCheck(checkData).subscribe({
+          next: (response) => {
+            this.success = 'שק נכנס נוצר בהצלחה';
+            this.loading = false;
+            setTimeout(() => {
+              this.router.navigate(['/incoming-checks']);
+            }, 2000);
+          },
+          error: (err) => {
+            this.error = err.error?.error || 'שגיאה ביצירת השק';
+            this.loading = false;
+          }
+        });
+      }
     }
   }
 

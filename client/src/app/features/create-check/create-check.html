@@ -1,6 +1,6 @@
 <div class="create-check-container">
   <div class="header">
-    <h2>יצירת שק דיגיטלי</h2>
+    <h2>{{ checkForm.is_physical ? 'יצירת שק פיזי' : 'יצירת שק דיגיטלי' }}</h2>
     <button class="btn btn-secondary" (click)="cancel()">חזור</button>
   </div>
 
@@ -27,8 +27,8 @@
     </div>
   </div>
 
-  <!-- בחירת סוג יצירה -->
-  <div class="creation-type-selection">
+  <!-- בחירת סוג יצירה - רק לשקים דיגיטליים -->
+  <div class="creation-type-selection" *ngIf="!checkForm.is_physical">
     <h3>סוג יצירה</h3>
     <div class="creation-options">
       <label class="creation-option">
@@ -73,7 +73,8 @@
       </div>
     </div>
 
-    <div class="form-group">
+    <!-- שדה איש קשר - רק לשקים דיגיטליים -->
+    <div class="form-group" *ngIf="!checkForm.is_physical">
       <label>{{ checkType === 'outgoing' ? 'מוטב' : 'משלם' }}:</label>
       <select [(ngModel)]="checkForm.contact_id" name="contact_id" required>
         <option value="">בחר איש קשר</option>
@@ -81,6 +82,15 @@
           {{ contact.name }} - {{ contact.phone }}
         </option>
       </select>
+    </div>
+
+    <!-- שדות לשיקים פיזיים -->
+    <div class="form-group" *ngIf="checkForm.is_physical">
+      <label>{{ checkType === 'outgoing' ? 'שם המוטב' : 'שם המשלם' }}:</label>
+      <input type="text" 
+             [(ngModel)]="checkForm[checkType === 'outgoing' ? 'payee_name' : 'payer_name']" 
+             [name]="checkType === 'outgoing' ? 'payee_name' : 'payer_name'" 
+             required>
     </div>
 
     <div class="form-group">
@@ -94,7 +104,8 @@
     </div>
 
     <div class="form-row">
-      <div class="form-group">
+      <!-- תאריך הנפקה - רק לשקים דיגיטליים -->
+      <div class="form-group" *ngIf="!checkForm.is_physical">
         <label>תאריך הנפקה:</label>
         <input type="date" 
                [(ngModel)]="checkForm.issue_date" 
@@ -118,6 +129,27 @@
                name="is_physical">
         <span>שק פיזי (אפשרות העלאת תמונה)</span>
       </label>
+    </div>
+
+    <!-- שדות נוספים לשיקים פיזיים -->
+    <div *ngIf="checkForm.is_physical" class="physical-check-fields">
+      <div class="form-row">
+        <div class="form-group">
+          <label>שם הבנק:</label>
+          <input type="text" 
+                 [(ngModel)]="checkForm.bank_name" 
+                 name="bank_name" 
+                 placeholder="לדוגמה: בנק הפועלים">
+        </div>
+        
+        <div class="form-group">
+          <label>מספר סניף:</label>
+          <input type="text" 
+                 [(ngModel)]="checkForm.bank_branch" 
+                 name="bank_branch" 
+                 placeholder="לדוגמה: 123">
+        </div>
+      </div>
     </div>
 
     <div *ngIf="checkType === 'incoming'" class="form-group">
