@@ -188,12 +188,11 @@
   align-items: center;
 }
 
-.account-select {
-  border: 1px solid #E5E7EB;
-  border-radius: 8px;
-  padding: 8px 12px;
-  font-size: 14px;
-  background: white;
+.account-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1F2937;
+  padding: 8px 0;
 }
 
 .balance-info {
@@ -213,15 +212,6 @@
   margin-bottom: 4px;
 }
 
-.credit-link {
-  color: #0066B2;
-  text-decoration: none;
-  font-size: 14px;
-}
-
-.credit-link:hover {
-  text-decoration: underline;
-}
 
 
 /* Loading and Error States */
