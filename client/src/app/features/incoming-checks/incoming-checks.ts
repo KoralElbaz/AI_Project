@@ -69,6 +69,7 @@ export class IncomingChecksComponent implements OnInit {
     { value: '', label: 'כל הסטטוסים' },
     { value: 'waiting_deposit', label: 'ממתין להפקדה' },
     { value: 'deposited', label: 'הופקד' },
+    { value: 'cleared', label: 'נפרע' },
     { value: 'bounced', label: 'נדחה' },
     { value: 'endorsed', label: 'הועבר' },
     { value: 'expired', label: 'פג תוקף' },
@@ -570,6 +571,7 @@ export class IncomingChecksComponent implements OnInit {
       const statusMap: { [key: string]: string } = {
         'waiting_deposit': 'ממתין להפקדה',
         'deposited': 'הופקד',
+        'cleared': 'נפרע',
         'bounced': 'נדחה',
         'endorsed': 'הועבר',
         'expired': 'פג תוקף',
@@ -794,6 +796,7 @@ export class IncomingChecksComponent implements OnInit {
     switch (status) {
       case 'waiting_deposit': return 'status-waiting';
       case 'deposited': return 'status-deposited';
+      case 'cleared': return 'status-cleared';
       case 'bounced': return 'status-bounced';
       case 'cancelled': return 'status-cancelled';
       case 'expired': return 'status-expired';

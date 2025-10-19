@@ -9,12 +9,12 @@ router.get('/', (req, res) => {
   let query = `
     SELECT 
       oc.*,
-      c.name as payee_name,
-      c.phone as payee_phone,
-      c.email as payee_email,
-      c.bank_name,
-      c.bank_branch,
-      c.account_number
+      COALESCE(c.name, oc.payee_name) as payee_name,
+      COALESCE(c.phone, '') as payee_phone,
+      COALESCE(c.email, '') as payee_email,
+      COALESCE(c.bank_name, oc.bank_name) as bank_name,
+      COALESCE(c.bank_branch, oc.bank_branch) as bank_branch,
+      COALESCE(c.account_number, '') as account_number
     FROM outgoing_checks oc
     LEFT JOIN contacts c ON oc.payee_contact_id = c.id
     WHERE 1=1
@@ -92,13 +92,13 @@ router.get('/:id', (req, res) => {
   const query = `
     SELECT 
       oc.*,
-      c.name as payee_name,
-      c.phone as payee_phone,
-      c.email as payee_email,
-      c.bank_name,
-      c.bank_branch,
-      c.account_number,
-      c.proxy
+      COALESCE(c.name, oc.payee_name) as payee_name,
+      COALESCE(c.phone, '') as payee_phone,
+      COALESCE(c.email, '') as payee_email,
+      COALESCE(c.bank_name, oc.bank_name) as bank_name,
+      COALESCE(c.bank_branch, oc.bank_branch) as bank_branch,
+      COALESCE(c.account_number, '') as account_number,
+      COALESCE(c.proxy, '') as proxy
     FROM outgoing_checks oc
     LEFT JOIN contacts c ON oc.payee_contact_id = c.id
     WHERE oc.id = ?
@@ -123,9 +123,19 @@ router.post('/', (req, res) => {
   const { check_number, payee_contact_id, amount, issue_date, due_date, is_physical, notes } = req.body;
   
   // ולידציות
-  // if (!check_number || !payee_contact_id || !amount || !issue_date || !due_date) {
-  //   return res.status(400).json({ error: 'כל השדות החובה נדרשים' });
-  // }
+  if (!check_number || !amount || !issue_date || !due_date) {
+    return res.status(400).json({ error: 'כל השדות החובה נדרשים' });
+  }
+  
+  // בדיקה שאיש קשר נדרש לשיקים דיגיטליים
+  if (!is_physical && !payee_contact_id) {
+    return res.status(400).json({ error: 'איש קשר נדרש לשיקים דיגיטליים' });
+  }
+  
+  // בדיקה ששם המוטב נדרש לשיקים פיזיים
+  if (is_physical && !req.body.payee_name) {
+    return res.status(400).json({ error: 'שם המוטב נדרש לשיקים פיזיים' });
+  }
   
   // בדיקה שמספר השק מכיל רק מספרים
   if (!/^[0-9]+$/.test(check_number)) {
