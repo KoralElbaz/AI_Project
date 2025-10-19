@@ -46,6 +46,7 @@ function initializeDatabase() {
       account_number TEXT,
       proxy TEXT,
       is_active BOOLEAN DEFAULT 1,
+      is_business BOOLEAN DEFAULT 0,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
@@ -233,16 +234,16 @@ function insertSampleData() {
 
     if (row.count === 0) {
       const sampleContacts = [
-        ['יוסי כהן', 'supplier', '123456789', '050-1234567', 'yossi@example.com', 'בנק הפועלים', '123', '1111111', 'PROXY123', 1],
-        ['שרה לוי', 'customer', '987654321', '052-9876543', 'sara@example.com', 'בנק לאומי', '456', '2222222', 'PROXY456', 1],
-        ['דוד ישראלי', 'both', '555555555', '053-5555555', 'david@example.com', 'בנק דיסקונט', '789', '3333333', 'PROXY789', 1],
-        ['רחל גולדברג', 'supplier', '111111111', '054-1111111', 'rachel@example.com', 'בנק מזרחי', '012', '4444444', 'PROXY012', 1],
-        ['משה אברהם', 'customer', '222222222', '055-2222222', 'moshe@example.com', 'בנק איגוד', '345', '5555555', 'PROXY345', 1]
+        ['יוסי כהן', 'supplier', '123456789', '050-1234567', 'yossi@example.com', 'בנק הפועלים', '123', '1111111', 'PROXY123', 1, 0],
+        ['שרה לוי', 'customer', '987654321', '052-9876543', 'sara@example.com', 'בנק לאומי', '456', '2222222', 'PROXY456', 1, 0],
+        ['דוד ישראלי', 'both', '555555555', '053-5555555', 'david@example.com', 'בנק דיסקונט', '789', '3333333', 'PROXY789', 1, 1],
+        ['רחל גולדברג', 'supplier', '111111111', '054-1111111', 'rachel@example.com', 'בנק מזרחי', '012', '4444444', 'PROXY012', 1, 0],
+        ['משה אברהם', 'customer', '222222222', '055-2222222', 'moshe@example.com', 'בנק איגוד', '345', '5555555', 'PROXY345', 1, 1]
       ];
 
       const insertStatement = db.prepare(`
-        INSERT INTO contacts (name, type, id_number, phone, email, bank_name, bank_branch, account_number, proxy, is_active) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO contacts (name, type, id_number, phone, email, bank_name, bank_branch, account_number, proxy, is_active, is_business) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `);
 
       sampleContacts.forEach(contact => {

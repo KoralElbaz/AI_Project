@@ -39,16 +39,26 @@ export interface OutgoingCheckStats {
 
 export interface CreateOutgoingCheckRequest {
   check_number: string;
-  payee_contact_id: number;
+  payee_name: string;
+  id_number: string;
+  identifier_type: string;
+  phone?: string;
+  bank_branch?: string;
+  account_number?: string;
   amount: number;
   issue_date: string;
   due_date: string;
-  is_physical?: boolean;
+  is_physical: boolean;
   notes?: string;
 }
 
 export interface CreateOutgoingSeriesRequest {
-  payee_contact_id: number;
+  payee_name: string;
+  id_number: string;
+  identifier_type: string;
+  phone?: string;
+  bank_branch?: string;
+  account_number?: string;
   amount: number;
   day_of_month: number;
   total_checks: number;
