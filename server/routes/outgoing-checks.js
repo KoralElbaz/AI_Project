@@ -122,6 +122,11 @@ router.post('/', (req, res) => {
     return res.status(400).json({ error: 'כל השדות החובה נדרשים' });
   }
   
+  // בדיקה שמספר השק מכיל רק מספרים
+  if (!/^[0-9]+$/.test(check_number)) {
+    return res.status(400).json({ error: 'מספר השק חייב להכיל רק ספרות' });
+  }
+  
   if (amount <= 0) {
     return res.status(400).json({ error: 'הסכום חייב להיות גדול מ-0' });
   }
@@ -348,6 +353,11 @@ router.post('/physical', (req, res) => {
   // ולידציות
   if (!check_number || !payee_name || !amount || !due_date) {
     return res.status(400).json({ error: 'כל השדות החובה נדרשים' });
+  }
+  
+  // בדיקה שמספר השק מכיל רק מספרים
+  if (!/^[0-9]+$/.test(check_number)) {
+    return res.status(400).json({ error: 'מספר השק חייב להכיל רק ספרות' });
   }
   
   if (amount <= 0) {

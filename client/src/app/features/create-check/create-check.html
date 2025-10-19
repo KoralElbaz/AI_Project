@@ -64,6 +64,10 @@
         <input type="text" 
                [(ngModel)]="checkForm.check_number" 
                name="check_number" 
+               pattern="[0-9]*"
+               inputmode="numeric"
+               onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+               placeholder="רק מספרים"
                required>
         <button type="button" 
                 class="btn btn-sm btn-secondary" 
