@@ -568,6 +568,17 @@
   gap: 8px;
 }
 
+.status-notice {
+  background: #EBF8FF;
+  border: 1px solid #3182CE;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .notice-icon {
   font-size: 16px;
 }
@@ -576,6 +587,10 @@
   color: #92400E;
   font-weight: 600;
   font-size: 14px;
+}
+
+.status-notice .notice-text {
+  color: #1E40AF;
 }
 
 .drawer-actions h4 {

@@ -146,10 +146,10 @@ export class CreateCheckComponent implements OnInit {
   }
 
   generateCheckNumber() {
-    // יצירת מספר שק אוטומטי
-    const timestamp = Date.now();
-    const random = Math.floor(Math.random() * 1000);
-    this.checkForm.check_number = `${this.checkType === 'outgoing' ? 'OUT' : 'INC'}${timestamp}${random}`;
+    // יצירת מספר שק אוטומטי - רק מספרים
+    const timestamp = Date.now().toString().slice(-8); // 8 ספרות אחרונות
+    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0'); // 3 ספרות עם אפסים מובילים
+    this.checkForm.check_number = `${timestamp}${random}`;
   }
 
   validateForm(): boolean {
@@ -163,6 +163,12 @@ export class CreateCheckComponent implements OnInit {
   validateSingleCheckForm(): boolean {
     if (!this.checkForm.check_number) {
       this.error = 'מספר שק נדרש';
+      return false;
+    }
+    
+    // בדיקה שמספר השק מכיל רק מספרים
+    if (!/^[0-9]+$/.test(this.checkForm.check_number)) {
+      this.error = 'מספר השק חייב להכיל רק ספרות';
       return false;
     }
     

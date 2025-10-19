@@ -4,7 +4,7 @@ const { db } = require('../database');
 
 // GET /api/incoming-checks - קבלת כל השקים הנכנסים
 router.get('/', (req, res) => {
-  const { status, payer_id, start_date, end_date, min_amount, max_amount, sort } = req.query;
+  const { status, payer_id, start_date, end_date, min_amount, max_amount, check_number, sort } = req.query;
   
   let query = `
     SELECT 
@@ -50,6 +50,11 @@ router.get('/', (req, res) => {
   if (max_amount) {
     query += ' AND ic.amount <= ?';
     params.push(max_amount);
+  }
+  
+  if (check_number) {
+    query += ' AND ic.check_number LIKE ?';
+    params.push(`%${check_number}%`);
   }
   
   if (sort) {
@@ -120,6 +125,11 @@ router.post('/', (req, res) => {
   // ולידציות
   if (!check_number || !payer_contact_id || !amount || !issue_date || !due_date) {
     return res.status(400).json({ error: 'כל השדות החובה נדרשים' });
+  }
+  
+  // בדיקה שמספר השק מכיל רק מספרים
+  if (!/^[0-9]+$/.test(check_number)) {
+    return res.status(400).json({ error: 'מספר השק חייב להכיל רק ספרות' });
   }
   
   if (amount <= 0) {
@@ -260,16 +270,16 @@ router.put('/:id/deposit', (req, res) => {
     
     // בדיקת תאריכים
     const today = new Date();
-    const issueDate = new Date(check.issue_date);
-    const sixMonthsLater = new Date(issueDate);
-    sixMonthsLater.setMonth(sixMonthsLater.getMonth() + 6);
+    const dueDate = new Date(check.due_date);
+    const sixMonthsFromDue = new Date(dueDate);
+    sixMonthsFromDue.setMonth(sixMonthsFromDue.getMonth() + 6);
     
-    if (today < issueDate) {
-      return res.status(400).json({ error: 'לא ניתן להפקיד לפני תאריך השק' });
+    if (today < dueDate) {
+      return res.status(400).json({ error: 'לא ניתן להפקיד לפני תאריך הפירעון' });
     }
     
-    if (today > sixMonthsLater) {
-      return res.status(400).json({ error: 'השק פג תוקף (עברו 6 חודשים)' });
+    if (today > sixMonthsFromDue) {
+      return res.status(400).json({ error: 'השק פג תוקף (עברו 6 חודשים מתאריך הפירעון)' });
     }
     
     // בדיקת כפילות
@@ -428,6 +438,11 @@ router.post('/physical', (req, res) => {
   // ולידציות
   if (!check_number || !payer_name || !amount || !due_date) {
     return res.status(400).json({ error: 'כל השדות החובה נדרשים' });
+  }
+  
+  // בדיקה שמספר השק מכיל רק מספרים
+  if (!/^[0-9]+$/.test(check_number)) {
+    return res.status(400).json({ error: 'מספר השק חייב להכיל רק ספרות' });
   }
   
   if (amount <= 0) {

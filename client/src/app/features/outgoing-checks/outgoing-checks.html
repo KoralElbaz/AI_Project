@@ -62,6 +62,16 @@
         <input type="number" [(ngModel)]="filters.max_amount" (change)="applyFilters()" placeholder="999999">
       </div>
       
+      <div class="filter-group">
+        <label>מספר שק:</label>
+        <input type="text" 
+               [(ngModel)]="filters.check_number" 
+               (change)="applyFilters()" 
+               placeholder="הזן מספר שק"
+               pattern="[0-9]*"
+               inputmode="numeric">
+      </div>
+      
       <div class="filter-actions">
         <button class="search-btn" (click)="applyFilters()">
           🔍 חפש
@@ -110,8 +120,8 @@
             <td class="amount">{{ formatAmount(check.amount) }}</td>
             <td class="payee-name">{{ check.payee_name || 'לא זמין' }}</td>
             <td class="status">
-              <span class="status-badge" [ngClass]="getStatusClass(check.status)">
-                {{ getStatusLabel(check.status) }}
+              <span class="status-badge" [ngClass]="getStatusClass(getEffectiveStatus(check))">
+                {{ getStatusLabel(getEffectiveStatus(check)) }}
               </span>
             </td>
             <td class="marks">
@@ -201,10 +211,15 @@
     <!-- No Data -->
     <div class="no-data" *ngIf="checks.length === 0">
       <div class="no-data-icon">📋</div>
-      <h3>לא נמצאו שקים יוצאים</h3>
-      <p>אין שקים יוצאים התואמים לפילטרים שנבחרו</p>
-      <button class="create-btn" (click)="navigateToCreateCheck()">
+      <h3 *ngIf="!hasActiveFilters()">לא נמצאו שקים יוצאים</h3>
+      <h3 *ngIf="hasActiveFilters()">לא נמצאו תוצאות לחיפוש</h3>
+      <p *ngIf="!hasActiveFilters()">אין שקים יוצאים במערכת</p>
+      <p *ngIf="hasActiveFilters()">אין שקים יוצאים התואמים לפילטרים שנבחרו</p>
+      <button class="create-btn" (click)="navigateToCreateCheck()" *ngIf="!hasActiveFilters()">
         צור שק יוצא ראשון
+      </button>
+      <button class="clear-btn" (click)="clearFilters()" *ngIf="hasActiveFilters()">
+        נקה פילטרים
       </button>
     </div>
   </div>

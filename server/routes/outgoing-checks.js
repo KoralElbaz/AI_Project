@@ -4,7 +4,7 @@ const { db } = require('../database');
 
 // GET /api/outgoing-checks - קבלת כל השקים היוצאים
 router.get('/', (req, res) => {
-  const { status, payee_id, start_date, end_date, min_amount, max_amount, sort } = req.query;
+  const { status, payee_id, start_date, end_date, min_amount, max_amount, check_number, sort } = req.query;
   
   let query = `
     SELECT 
@@ -50,6 +50,11 @@ router.get('/', (req, res) => {
   if (max_amount) {
     query += ' AND oc.amount <= ?';
     params.push(max_amount);
+  }
+  
+  if (check_number) {
+    query += ' AND oc.check_number LIKE ?';
+    params.push(`%${check_number}%`);
   }
   
   if (sort) {
@@ -120,6 +125,11 @@ router.post('/', (req, res) => {
   // ולידציות
   if (!check_number || !payee_contact_id || !amount || !issue_date || !due_date) {
     return res.status(400).json({ error: 'כל השדות החובה נדרשים' });
+  }
+  
+  // בדיקה שמספר השק מכיל רק מספרים
+  if (!/^[0-9]+$/.test(check_number)) {
+    return res.status(400).json({ error: 'מספר השק חייב להכיל רק ספרות' });
   }
   
   if (amount <= 0) {
@@ -348,6 +358,11 @@ router.post('/physical', (req, res) => {
   // ולידציות
   if (!check_number || !payee_name || !amount || !due_date) {
     return res.status(400).json({ error: 'כל השדות החובה נדרשים' });
+  }
+  
+  // בדיקה שמספר השק מכיל רק מספרים
+  if (!/^[0-9]+$/.test(check_number)) {
+    return res.status(400).json({ error: 'מספר השק חייב להכיל רק ספרות' });
   }
   
   if (amount <= 0) {
