@@ -244,6 +244,7 @@ export class CreateCheckComponent implements OnInit {
       id_number: this.formData.id_number,
       identifier_type: this.formData.identifier_type,
       phone: this.formData.phone,
+      bank_name: 'בנק דיסקונט', // מולא אוטומטית
       bank_branch: this.formData.bank_branch,
       account_number: this.formData.account_number,
       amount: this.formData.amount ? parseFloat(this.formData.amount.replace(/,/g, '')) || 0 : 0,
@@ -280,6 +281,7 @@ export class CreateCheckComponent implements OnInit {
       id_number: this.formData.id_number,
       identifier_type: this.formData.identifier_type,
       phone: this.formData.phone,
+      bank_name: 'בנק דיסקונט', // מולא אוטומטית
       bank_branch: this.formData.bank_branch,
       account_number: this.formData.account_number,
       amount: parseFloat(this.seriesForm.amount),

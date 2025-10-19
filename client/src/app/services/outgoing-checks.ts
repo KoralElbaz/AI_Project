@@ -43,6 +43,7 @@ export interface CreateOutgoingCheckRequest {
   id_number: string;
   identifier_type: string;
   phone?: string;
+  bank_name?: string;
   bank_branch?: string;
   account_number?: string;
   amount: number;
@@ -57,6 +58,7 @@ export interface CreateOutgoingSeriesRequest {
   id_number: string;
   identifier_type: string;
   phone?: string;
+  bank_name?: string;
   bank_branch?: string;
   account_number?: string;
   amount: number;
