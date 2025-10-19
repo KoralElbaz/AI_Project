@@ -276,7 +276,7 @@
   border-left: 1px solid #E0E0E0;
 }
 
-.checks-table th:first-child {
+.checks-table th:first-child:not(.check-type) {
   border-left: none;
 }
 
@@ -307,12 +307,45 @@
   border-left: 1px solid #E0E0E0;
 }
 
-.checks-table td:first-child {
+.checks-table td:first-child:not(.check-type) {
   border-left: none;
+}
+
+.checks-table th.check-type,
+.checks-table td.check-type {
+  border-right: 2px solid #E0E0E0 !important;
+  border-left: none;
+}
+
+/* Check Type Icons */
+.check-type {
+  width: 60px;
+  text-align: center;
+  border-right: 2px solid #E0E0E0;
+}
+
+.type-icon {
+  font-size: 20px;
+  display: inline-block;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.type-icon:hover {
+  transform: scale(1.2);
+}
+
+.physical-icon {
+  color: #FF6B35;
+}
+
+.digital-icon {
+  color: #4ECDC4;
 }
 
 .due-date {
   font-weight: 600;
+  border-left: 2px solid #E0E0E0 !important;
 }
 
 .amount {
