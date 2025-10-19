@@ -12,7 +12,7 @@
       </div>
       <div class="header-right">
         <button class="create-btn" (click)="navigateToCreateCheck()">
-          ✏️ צור שק חדש
+          ✏️ יצירת שיק דיגיטלי
         </button>
         <button class="physical-check-btn" (click)="addPhysicalCheck()">
           📄 הוסף שק פיזי
@@ -242,7 +242,7 @@
       <p *ngIf="!hasActiveFilters()">אין שקים נכנסים במערכת</p>
       <p *ngIf="hasActiveFilters()">אין שקים נכנסים התואמים לפילטרים שנבחרו</p>
       <button class="create-btn" (click)="navigateToCreateCheck()" *ngIf="!hasActiveFilters()">
-        צור שק נכנס ראשון
+        יצירת שיק דיגיטלי ראשון
       </button>
       <button class="clear-btn" (click)="clearFilters()" *ngIf="hasActiveFilters()">
         נקה פילטרים
