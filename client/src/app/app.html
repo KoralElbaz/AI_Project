@@ -1,3 +1,49 @@
 
+<div class="app-container">
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-content">
+      <div class="logo-section">
+        <h1 class="main-title">ניהול שקים</h1>
+        <div class="divider"></div>
+        <div class="discount-logo">דיסקונט</div>
+      </div>
+      
+      <div class="header-actions">
+        <button class="icon-btn" title="חיפוש">
+          <span class="icon">🔍</span>
+        </button>
+        <button class="icon-btn notification-btn" title="התראות">
+          <span class="icon">🔔</span>
+          <span class="notification-dot"></span>
+        </button>
+        <button class="icon-btn notification-btn" title="הודעות">
+          <span class="icon">📧</span>
+          <span class="notification-dot"></span>
+        </button>
+        <button class="icon-btn" title="הגדרות">
+          <span class="icon">⚙️</span>
+        </button>
+        <button class="icon-btn" title="נגישות">
+          <span class="icon">♿</span>
+        </button>
+        <button class="icon-btn" title="שירות לקוחות">
+          <span class="icon">💬</span>
+        </button>
+        <button class="logout-btn" (click)="logout()">
+          יציאה ←
+        </button>
+      </div>
+    </div>
+  </header>
 
-<router-outlet />
+  <div class="app-layout">
+    <!-- Sidebar - only show if not on login page -->
+    <app-sidebar *ngIf="!isLoginPage"></app-sidebar>
+    
+    <!-- Main Content -->
+    <main class="main-content" [class.with-sidebar]="!isLoginPage">
+      <router-outlet />
+    </main>
+  </div>
+</div>

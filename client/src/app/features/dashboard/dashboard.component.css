@@ -6,106 +6,12 @@
   direction: rtl;
 }
 
-/* Header */
-.dashboard-header {
-  background: white;
-  height: 64px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  border-bottom: 1px solid #E5E7EB;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-}
-
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 100%;
-  padding: 0 24px;
-}
-
-.logo-section {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.main-title {
-  font-size: 24px;
-  font-weight: 700;
-  color: #1F2937;
-  margin: 0;
-}
-
-.divider {
-  width: 2px;
-  height: 32px;
-  background: #4CAF50;
-}
-
-.discount-logo {
-  color: #4CAF50;
-  font-weight: 700;
-  font-size: 18px;
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.icon-btn {
-  background: none;
-  border: none;
-  padding: 8px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  position: relative;
-}
-
-.icon-btn:hover {
-  background: #F3F4F6;
-}
-
-.notification-btn {
-  position: relative;
-}
-
-.notification-dot {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  width: 8px;
-  height: 8px;
-  background: #EF4444;
-  border-radius: 50%;
-}
-
-.logout-btn {
-  background: #4CAF50;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.logout-btn:hover {
-  background: #45A049;
-}
-
 /* Layout */
 .dashboard-layout {
   display: flex;
   margin-top: 64px;
   min-height: calc(100vh - 64px);
+  width: 100%;
 }
 
 /* Sidebar */
@@ -169,8 +75,9 @@
 /* Main Content */
 .main-content {
   flex: 1;
-  margin-right: 320px;
   padding: 24px;
+  width: calc(100% - 320px);
+  min-height: calc(100vh - 64px);
 }
 
 /* Account Selector */
