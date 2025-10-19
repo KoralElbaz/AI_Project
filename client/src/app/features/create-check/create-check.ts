@@ -74,7 +74,53 @@ export class CreateCheckComponent implements OnInit {
       if (!this.checkForm.is_physical) {
         this.checkType = 'outgoing';
       }
+      
+      // טיפול בשכפול שיק
+      if (params['duplicate'] === 'true') {
+        this.handleDuplicateCheck(params);
+      }
     });
+  }
+
+  // טיפול בשכפול שיק
+  handleDuplicateCheck(params: any) {
+    // מילוי הטופס עם הנתונים מהשיק המקורי
+    if (params['check_number']) {
+      this.checkForm.check_number = params['check_number'];
+    }
+    if (params['contact_id']) {
+      this.checkForm.contact_id = params['contact_id'];
+    }
+    if (params['amount']) {
+      this.checkForm.amount = params['amount'];
+    }
+    if (params['notes']) {
+      this.checkForm.notes = params['notes'];
+    }
+    if (params['bank_name']) {
+      this.checkForm.bank_name = params['bank_name'];
+    }
+    if (params['bank_branch']) {
+      this.checkForm.bank_branch = params['bank_branch'];
+    }
+    
+    // הגדרת תאריכים חדשים
+    const today = new Date();
+    this.checkForm.issue_date = today.toISOString().split('T')[0];
+    
+    // תאריך פירעון - חודש קדימה (ברירת מחדל)
+    const oneMonthFromNow = new Date(today);
+    oneMonthFromNow.setMonth(oneMonthFromNow.getMonth() + 1);
+    this.checkForm.due_date = oneMonthFromNow.toISOString().split('T')[0];
+    
+    // וידוא שזה שיק דיגיטלי
+    this.checkForm.is_physical = false;
+    this.isSeries = false;
+    
+    // הודעה למשתמש
+    this.success = 'הטופס מולא אוטומטית עם נתוני השיק המקורי. ניתן לערוך את הפרטים לפי הצורך.';
+    
+    console.log('שכפול שיק - הטופס מולא עם הנתונים:', this.checkForm);
   }
 
   initializeForm() {

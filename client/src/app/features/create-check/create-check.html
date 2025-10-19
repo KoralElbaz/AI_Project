@@ -53,6 +53,22 @@
   <!-- הודעות -->
   <div *ngIf="error" class="alert alert-error">{{ error }}</div>
   <div *ngIf="success" class="alert alert-success">{{ success }}</div>
+  
+  <!-- הודעה מיוחדת לשכפול שיק -->
+  <div *ngIf="success && success.includes('מולא אוטומטית')" class="alert alert-info duplicate-info">
+    <div class="duplicate-header">
+      <span class="duplicate-icon">📋</span>
+      <strong>שכפול שיק</strong>
+    </div>
+    <p>הטופס מולא אוטומטית עם נתוני השיק המקורי. ניתן לערוך את הפרטים לפי הצורך.</p>
+    <ul class="duplicate-tips">
+      <li>✓ מספר השק נוצר אוטומטית</li>
+      <li>✓ איש הקשר נבחר אוטומטית</li>
+      <li>✓ הסכום וההערות הועתקו</li>
+      <li>✓ פרטי הבנק הועתקו (אם קיימים)</li>
+      <li>⚠️ יש לעדכן את תאריך הפירעון</li>
+    </ul>
+  </div>
 
   <!-- טופס שק בודד -->
   <form *ngIf="!isSeries" (ngSubmit)="onSubmit()" class="check-form">
