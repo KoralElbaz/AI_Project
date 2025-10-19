@@ -56,6 +56,7 @@ export class IncomingChecksComponent implements OnInit {
     end_date: '',
     min_amount: '',
     max_amount: '',
+    check_number: '',
     sort: 'created_at'
   };
   
@@ -95,6 +96,7 @@ export class IncomingChecksComponent implements OnInit {
     if (this.filters.end_date) params.end_date = this.filters.end_date;
     if (this.filters.min_amount) params.min_amount = parseFloat(this.filters.min_amount);
     if (this.filters.max_amount) params.max_amount = parseFloat(this.filters.max_amount);
+    if (this.filters.check_number) params.check_number = this.filters.check_number;
     if (this.filters.sort) params.sort = this.filters.sort;
 
     this.http.get<IncomingCheck[]>('http://localhost:3000/api/incoming-checks', { params }).subscribe({
@@ -121,9 +123,22 @@ export class IncomingChecksComponent implements OnInit {
       end_date: '',
       min_amount: '',
       max_amount: '',
+      check_number: '',
       sort: 'created_at'
     };
     this.loadChecks();
+  }
+
+  // בדיקה אם יש פילטרים פעילים
+  hasActiveFilters(): boolean {
+    return !!(
+      this.filters.status ||
+      this.filters.start_date ||
+      this.filters.end_date ||
+      this.filters.min_amount ||
+      this.filters.max_amount ||
+      this.filters.check_number
+    );
   }
 
   // ניווט
@@ -198,6 +213,12 @@ export class IncomingChecksComponent implements OnInit {
       return;
     }
     
+    // בדיקה אם השק ניתן להפקדה
+    if (!this.isCheckDepositable(this.selectedCheck)) {
+      alert('לא ניתן להפקיד את השק - תאריך פירעון לא הגיע או השק פג תוקף');
+      return;
+    }
+    
     if (this.selectedCheck.status !== 'waiting_deposit') {
       alert('ניתן להפקיד רק שקים במצב ממתין להפקדה');
       return;
@@ -233,6 +254,65 @@ export class IncomingChecksComponent implements OnInit {
           console.error('Error scheduling deposit:', err);
         }
       });
+    }
+  }
+
+  // בדיקה אם השק ניתן להפקדה
+  isCheckDepositable(check: any): boolean {
+    if (!check || check.is_physical) {
+      return false;
+    }
+
+    const today = new Date();
+    const dueDate = new Date(check.due_date);
+    
+    // שק ניתן להפקדה רק מתאריך הפירעון ועד חצי שנה קדימה
+    const sixMonthsFromDue = new Date(dueDate);
+    sixMonthsFromDue.setMonth(sixMonthsFromDue.getMonth() + 6);
+    
+    return today >= dueDate && today <= sixMonthsFromDue;
+  }
+
+  // קבלת הודעת כלי עבור כפתור ההפקדה
+  getDepositButtonTooltip(check: any): string {
+    if (!check || check.is_physical) {
+      return 'לא ניתן להפקיד שק פיזי';
+    }
+
+    const today = new Date();
+    const dueDate = new Date(check.due_date);
+    const sixMonthsFromDue = new Date(dueDate);
+    sixMonthsFromDue.setMonth(sixMonthsFromDue.getMonth() + 6);
+
+    if (today < dueDate) {
+      const daysUntilDue = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      return `השק ניתן להפקדה בעוד ${daysUntilDue} ימים (תאריך פירעון: ${this.formatDate(check.due_date)})`;
+    } else if (today > sixMonthsFromDue) {
+      return `השק פג תוקף - ניתן היה להפקיד עד ${this.formatDate(sixMonthsFromDue.toISOString().split('T')[0])}`;
+    } else {
+      return `השק ניתן להפקדה (תאריך פירעון: ${this.formatDate(check.due_date)})`;
+    }
+  }
+
+  // קבלת הודעה עבור סטטוס השק
+  getStatusNotice(check: any): string {
+    if (!check) return '';
+
+    switch (check.status) {
+      case 'deposited':
+        return 'השק הופקד - לא ניתן לבצע הפקדה נוספת';
+      case 'cleared':
+        return 'השק נפרע - לא ניתן לבצע הפקדה נוספת';
+      case 'bounced':
+        return 'השק הוחזר - לא ניתן לבצע הפקדה נוספת';
+      case 'endorsed':
+        return 'השק הועבר - לא ניתן לבצע הפקדה נוספת';
+      case 'expired':
+        return 'השק פג תוקף - לא ניתן לבצע הפקדה נוספת';
+      case 'cancelled':
+        return 'השק בוטל - לא ניתן לבצע הפקדה נוספת';
+      default:
+        return 'לא ניתן לבצע הפקדה עבור סטטוס זה';
     }
   }
 

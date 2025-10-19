@@ -62,6 +62,16 @@
         <input type="number" [(ngModel)]="filters.max_amount" (change)="applyFilters()" placeholder="999999">
       </div>
       
+      <div class="filter-group">
+        <label>מספר שק:</label>
+        <input type="text" 
+               [(ngModel)]="filters.check_number" 
+               (change)="applyFilters()" 
+               placeholder="הזן מספר שק"
+               pattern="[0-9]*"
+               inputmode="numeric">
+      </div>
+      
       <div class="filter-actions">
         <button class="search-btn" (click)="applyFilters()">
           🔍 חפש
@@ -183,13 +193,27 @@
                     📄 הוצאת חשבונית
                   </button>
                   
-                  <button class="action-btn deposit-btn" (click)="depositCheck('immediate')" [disabled]="selectedCheck?.is_physical">
-                    💰 הפקדה מיידית
-                  </button>
+                  <!-- כפתורי הפקדה - רק למצב ממתין להפקדה -->
+                  <ng-container *ngIf="selectedCheck?.status === 'waiting_deposit'">
+                    <button class="action-btn deposit-btn" 
+                            (click)="depositCheck('immediate')" 
+                            [disabled]="selectedCheck?.is_physical || !isCheckDepositable(selectedCheck)"
+                            [title]="getDepositButtonTooltip(selectedCheck)">
+                      💳 הפקדת שיק
+                    </button>
+                    
+                    <button class="action-btn schedule-btn" (click)="depositCheck('scheduled')" [disabled]="selectedCheck?.is_physical">
+                      📅 הפקדה מתוזמנת
+                    </button>
+                  </ng-container>
                   
-                  <button class="action-btn schedule-btn" (click)="depositCheck('scheduled')" [disabled]="selectedCheck?.is_physical">
-                    📅 הפקדה מתוזמנת
-                  </button>
+                  <!-- הודעה עבור שיקים שכבר הופקדו/נפרעו -->
+                  <div *ngIf="selectedCheck?.status !== 'waiting_deposit' && !selectedCheck?.is_physical" class="status-notice">
+                    <span class="notice-icon">ℹ️</span>
+                    <span class="notice-text">
+                      {{ getStatusNotice(selectedCheck) }}
+                    </span>
+                  </div>
                 </div>
               </div>
             </td>
@@ -201,10 +225,15 @@
     <!-- No Data -->
     <div class="no-data" *ngIf="checks.length === 0">
       <div class="no-data-icon">📋</div>
-      <h3>לא נמצאו שקים נכנסים</h3>
-      <p>אין שקים נכנסים התואמים לפילטרים שנבחרו</p>
-      <button class="create-btn" (click)="navigateToCreateCheck()">
+      <h3 *ngIf="!hasActiveFilters()">לא נמצאו שקים נכנסים</h3>
+      <h3 *ngIf="hasActiveFilters()">לא נמצאו תוצאות לחיפוש</h3>
+      <p *ngIf="!hasActiveFilters()">אין שקים נכנסים במערכת</p>
+      <p *ngIf="hasActiveFilters()">אין שקים נכנסים התואמים לפילטרים שנבחרו</p>
+      <button class="create-btn" (click)="navigateToCreateCheck()" *ngIf="!hasActiveFilters()">
         צור שק נכנס ראשון
+      </button>
+      <button class="clear-btn" (click)="clearFilters()" *ngIf="hasActiveFilters()">
+        נקה פילטרים
       </button>
     </div>
   </div>

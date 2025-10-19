@@ -4,7 +4,7 @@ const { db } = require('../database');
 
 // GET /api/incoming-checks - קבלת כל השקים הנכנסים
 router.get('/', (req, res) => {
-  const { status, payer_id, start_date, end_date, min_amount, max_amount, sort } = req.query;
+  const { status, payer_id, start_date, end_date, min_amount, max_amount, check_number, sort } = req.query;
   
   let query = `
     SELECT 
@@ -50,6 +50,11 @@ router.get('/', (req, res) => {
   if (max_amount) {
     query += ' AND ic.amount <= ?';
     params.push(max_amount);
+  }
+  
+  if (check_number) {
+    query += ' AND ic.check_number LIKE ?';
+    params.push(`%${check_number}%`);
   }
   
   if (sort) {

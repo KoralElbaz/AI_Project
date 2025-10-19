@@ -52,6 +52,7 @@ export class OutgoingChecksComponent implements OnInit {
     end_date: '',
     min_amount: '',
     max_amount: '',
+    check_number: '',
     sort: 'created_at'
   };
   
@@ -91,6 +92,7 @@ export class OutgoingChecksComponent implements OnInit {
     if (this.filters.end_date) params.end_date = this.filters.end_date;
     if (this.filters.min_amount) params.min_amount = parseFloat(this.filters.min_amount);
     if (this.filters.max_amount) params.max_amount = parseFloat(this.filters.max_amount);
+    if (this.filters.check_number) params.check_number = this.filters.check_number;
     if (this.filters.sort) params.sort = this.filters.sort;
 
     this.http.get<OutgoingCheck[]>('http://localhost:3000/api/outgoing-checks', { params }).subscribe({
@@ -117,9 +119,22 @@ export class OutgoingChecksComponent implements OnInit {
       end_date: '',
       min_amount: '',
       max_amount: '',
+      check_number: '',
       sort: 'created_at'
     };
     this.loadChecks();
+  }
+
+  // בדיקה אם יש פילטרים פעילים
+  hasActiveFilters(): boolean {
+    return !!(
+      this.filters.status ||
+      this.filters.start_date ||
+      this.filters.end_date ||
+      this.filters.min_amount ||
+      this.filters.max_amount ||
+      this.filters.check_number
+    );
   }
 
   // ניווט
