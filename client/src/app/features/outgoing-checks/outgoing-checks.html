@@ -200,11 +200,24 @@
                   
                   <!-- כפתורים לשיקים דיגיטליים -->
                   <ng-container *ngIf="!selectedCheck?.is_physical">
-                    <button class="action-btn cancel-btn" (click)="cancelCheck()">
+                    <!-- כפתור ביטול - רק למצב ממתין לפירעון - Updated 19/10/2025 16:56 -->
+                    <button *ngIf="selectedCheck?.status === 'pending'" 
+                            class="action-btn cancel-btn" 
+                            (click)="cancelCheck()"
+                            title="ביטול שק זמין רק למצב ממתין לפירעון">
                       🚫 ביטול שק
                     </button>
                     
-                    <button class="action-btn duplicate-btn" (click)="duplicateCheck()">
+                    <!-- הודעה למצבים אחרים -->
+                    <div *ngIf="selectedCheck?.status !== 'pending'" 
+                         class="status-notice">
+                      <span class="notice-icon">ℹ️</span>
+                      <span class="notice-text">ביטול שק זמין רק למצב "ממתין לפירעון" (סטטוס: {{selectedCheck?.status}})</span>
+                    </div>
+                    
+                    <button *ngIf="selectedCheck?.status !== 'expired'" 
+                            class="action-btn duplicate-btn" 
+                            (click)="duplicateCheck()">
                       📋 שכפול שק
                     </button>
                   </ng-container>

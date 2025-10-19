@@ -196,33 +196,32 @@ export class OutgoingChecksComponent implements OnInit {
   cancelCheck() {
     if (!this.selectedCheck) return;
     
-    // בדיקה אם זה שק פיזי - הגבלת פעולות
-    if (this.selectedCheck.is_physical) {
-      alert('לא ניתן לבצע פעולות על שיק פיזי - זה מיועד למעקב בלבד');
-      return;
-    }
-    
+    // בדיקה שהשק במצב ממתין לפירעון
     if (this.selectedCheck.status !== 'pending') {
-      alert('ניתן לבטל רק שקים במצב ממתין לפירעון');
+      alert('לא ניתן לבטל שק שלא במצב ממתין לפירעון');
       return;
     }
 
-    const reason = prompt('סיבת ביטול:');
-    if (!reason) return;
+    // אישור ביטול
+    const confirmed = confirm(`האם אתה בטוח שברצונך למחוק את השק ${this.selectedCheck.check_number}?`);
+    if (!confirmed) return;
 
-    this.http.put(`http://localhost:3000/api/outgoing-checks/${this.selectedCheck.id}/status`, {
-      status: 'cancelled',
-      cancellation_reason: reason
-    }).subscribe({
+    // מחיקה מהמסד נתונים
+    this.http.delete(`http://localhost:3000/api/outgoing-checks/${this.selectedCheck.id}`).subscribe({
       next: () => {
-        this.selectedCheck!.status = 'cancelled';
-        this.selectedCheck!.cancellation_reason = reason;
-        this.loadChecks(); // רענון הרשימה
-        alert('השק בוטל בהצלחה');
+        // סגירת החלונית
+        this.expandedRowId = null;
+        this.selectedCheck = null;
+        
+        // רענון הרשימה
+        this.loadChecks();
+        
+        // הודעת הצלחה
+        alert('השק בוטל ונמחק בהצלחה');
       },
       error: (err) => {
-        alert('שגיאה בביטול השק');
-        console.error('Error cancelling check:', err);
+        alert('שגיאה במחיקת השק');
+        console.error('Error deleting check:', err);
       }
     });
   }
