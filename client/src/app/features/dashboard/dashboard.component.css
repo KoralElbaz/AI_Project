@@ -223,60 +223,6 @@
   text-decoration: underline;
 }
 
-/* Filters Bar */
-.filters-bar {
-  background: white;
-  padding: 24px;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  margin-bottom: 24px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.filter-left {
-  display: flex;
-  gap: 8px;
-}
-
-.filter-right {
-  display: flex;
-  gap: 16px;
-}
-
-.filter-btn {
-  padding: 8px 16px;
-  border-radius: 8px;
-  border: 1px solid #E5E7EB;
-  background: white;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.filter-btn.active {
-  background: #4CAF50;
-  color: white;
-  border-color: #4CAF50;
-}
-
-.filter-btn.primary {
-  background: #0066B2;
-  color: white;
-  border-color: #0066B2;
-}
-
-.filter-btn.primary:hover {
-  background: #005A9E;
-}
-
-.filter-btn:hover:not(.active):not(.primary) {
-  background: #F3F4F6;
-}
 
 /* Loading and Error States */
 .loading-container, .error-container {
