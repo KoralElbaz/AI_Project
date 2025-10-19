@@ -51,6 +51,56 @@
   flex-wrap: wrap;
 }
 
+.radio-group-inline {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+
+.radio-group-inline .radio-option {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  background: white;
+  margin: 0;
+  width: 100%;
+  justify-content: flex-start;
+  position: relative;
+}
+
+.radio-group-inline .radio-option:hover {
+  background: #F0FDF4;
+}
+
+.radio-group-inline .radio-option input[type="radio"] {
+  margin: 0;
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.radio-group-inline .radio-option input[type="radio"]:checked + span {
+  color: #10B981;
+  font-weight: 600;
+}
+
+.radio-group-inline .radio-option:has(input[type="radio"]:checked) {
+  background: #F0FDF4;
+}
+
+.radio-group-inline .radio-option span {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  flex: 1;
+  padding-left: 30px;
+}
+
 .type-option,
 .creation-option {
   display: flex;
@@ -271,59 +321,27 @@
   border: 1px solid #BBF7D0;
 }
 
-.alert-info {
-  background-color: #EFF6FF;
-  color: #1D4ED8;
-  border: 1px solid #BFDBFE;
+/* Series Fields */
+.series-fields {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 16px;
 }
 
-/* Duplicate Check Info */
-.duplicate-info {
-  background: linear-gradient(135deg, #EFF6FF 0%, #F0F9FF 100%);
-  border: 2px solid #3B82F6;
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 24px;
-}
-
-.duplicate-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
-  font-size: 18px;
+.series-fields .form-group label {
+  color: #374151;
   font-weight: 600;
-  color: #1E40AF;
 }
 
-.duplicate-icon {
-  font-size: 24px;
-}
-
-.duplicate-info p {
-  margin: 0 0 16px 0;
-  color: #1E40AF;
-  font-weight: 500;
-}
-
-.duplicate-tips {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 8px;
-}
-
-.duplicate-tips li {
-  padding: 8px 12px;
-  background: rgba(59, 130, 246, 0.1);
-  border-radius: 6px;
-  font-size: 14px;
-  color: #1E40AF;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+/* Field Hints */
+.field-hint {
+  display: block;
+  color: #6B7280;
+  font-size: 12px;
+  margin-top: 4px;
+  font-style: italic;
 }
 
 /* Responsive */

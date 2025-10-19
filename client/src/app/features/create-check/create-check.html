@@ -1,53 +1,7 @@
 <div class="create-check-container">
   <div class="header">
-    <h2>{{ checkForm.is_physical ? 'יצירת שק פיזי' : 'יצירת שק דיגיטלי' }}</h2>
+    <h2>יצירת שיק דיגיטלי</h2>
     <button class="btn btn-secondary" (click)="cancel()">חזור</button>
-  </div>
-
-  <!-- בחירת סוג שק - רק שיקים יוצאים -->
-  <div class="check-type-selection" *ngIf="checkForm.is_physical">
-    <h3>סוג שק</h3>
-    <div class="type-options">
-      <label class="type-option">
-        <input type="radio" 
-               name="checkType" 
-               value="outgoing" 
-               [(ngModel)]="checkType" 
-               (change)="onCheckTypeChange()">
-        <span class="type-label outgoing">שק יוצא (תשלום לספק)</span>
-      </label>
-      <label class="type-option">
-        <input type="radio" 
-               name="checkType" 
-               value="incoming" 
-               [(ngModel)]="checkType" 
-               (change)="onCheckTypeChange()">
-        <span class="type-label incoming">שק נכנס (תשלום מלקוח)</span>
-      </label>
-    </div>
-  </div>
-
-  <!-- בחירת סוג יצירה - רק לשקים דיגיטליים -->
-  <div class="creation-type-selection" *ngIf="!checkForm.is_physical">
-    <h3>סוג יצירה</h3>
-    <div class="creation-options">
-      <label class="creation-option">
-        <input type="radio" 
-               name="isSeries" 
-               [value]="false" 
-               [(ngModel)]="isSeries" 
-               (change)="onSeriesToggle()">
-        <span>שק בודד</span>
-      </label>
-      <label class="creation-option">
-        <input type="radio" 
-               name="isSeries" 
-               [value]="true" 
-               [(ngModel)]="isSeries" 
-               (change)="onSeriesToggle()">
-        <span>סדרת שקים חוזרים</span>
-      </label>
-    </div>
   </div>
 
   <!-- הודעות -->
@@ -70,112 +24,125 @@
     </ul>
   </div>
 
-  <!-- טופס שק בודד -->
-  <form *ngIf="!isSeries" (ngSubmit)="onSubmit()" class="check-form">
+  <!-- טופס יצירת שק -->
+  <form (ngSubmit)="onSubmit()" class="check-form" #formTemplate="ngForm">
     <h3>פרטי השק</h3>
     
     <div class="form-group">
       <label>מספר שק:</label>
-      <div class="input-with-button">
-        <input type="text" 
-               [(ngModel)]="checkForm.check_number" 
-               name="check_number" 
-               pattern="[0-9]*"
-               inputmode="numeric"
-               onkeypress="return event.charCode >= 48 && event.charCode <= 57"
-               placeholder="רק מספרים"
-               required>
-        <button type="button" 
-                class="btn btn-sm btn-secondary" 
-                (click)="generateCheckNumber()">
-          שלוף מספר הבא
-        </button>
+      <input type="text" 
+             [(ngModel)]="formData.check_number" 
+             name="check_number" 
+             readonly>
+    </div>
+
+    <!-- שדה מוטב -->
+    <div class="form-group">
+      <label>מוטב:</label>
+      <input type="text" 
+             [(ngModel)]="formData.payee_name" 
+             name="payee_name" 
+             (input)="onPayeeNameInput($event)"
+             maxlength="50">
+      <small class="field-hint">רק אותיות עברית/אנגלית, רווחים ו-"-"</small>
+    </div>
+
+    <!-- פרטים נוספים -->
+    <div class="form-group">
+      <label>ת.ז/ח.פ:</label>
+      <input type="text" 
+             [(ngModel)]="formData.id_number" 
+             name="id_number" 
+             (input)="onIdNumberInput($event)"
+             maxlength="9">
+      <small class="field-hint">לפחות 5 ספרות</small>
+    </div>
+
+    <!-- כפתורי רדיו -->
+    <div class="form-group">
+      <label>סוג זיהוי:</label>
+      <div class="radio-group-inline">
+        <label class="radio-option">
+          <input type="radio" 
+                 name="identifier_type" 
+                 value="phone" 
+                 [(ngModel)]="formData.identifier_type"
+                 (change)="onIdentifierTypeChange()">
+          <span>מזהה מוטב (נייד)</span>
+        </label>
+        <label class="radio-option">
+          <input type="radio" 
+                 name="identifier_type" 
+                 value="account" 
+                 [(ngModel)]="formData.identifier_type"
+                 (change)="onIdentifierTypeChange()">
+          <span>מספר חשבון</span>
+        </label>
       </div>
     </div>
 
-    <!-- שדה איש קשר - רק לשקים דיגיטליים -->
-    <div class="form-group" *ngIf="!checkForm.is_physical">
-      <label>{{ checkType === 'outgoing' ? 'מוטב' : 'משלם' }}:</label>
-      <select [(ngModel)]="checkForm.contact_id" name="contact_id" required>
-        <option value="">בחר איש קשר</option>
-        <option *ngFor="let contact of contacts" [value]="contact.id">
-          {{ contact.name }} - {{ contact.phone }}
-        </option>
-      </select>
+    <!-- שדה נייד -->
+    <div class="form-group" *ngIf="formData.identifier_type === 'phone'">
+      <label>נייד:</label>
+      <input type="text" 
+             [(ngModel)]="formData.phone" 
+             name="phone" 
+             (input)="onPhoneInput($event)"
+             maxlength="12">
+      <small class="field-hint">רק מספרים</small>
+    </div>
+
+    <!-- שדות סניף ומספר חשבון -->
+    <div class="form-group" *ngIf="formData.identifier_type === 'account'">
+      <div class="form-row">
+        <div class="form-group">
+          <label>סניף:</label>
+          <input type="text" 
+                 [(ngModel)]="formData.bank_branch" 
+                 name="bank_branch" 
+                 (input)="onBankBranchInput($event)">
+          <small class="field-hint">רק מספרים</small>
+        </div>
+        <div class="form-group">
+          <label>מספר חשבון:</label>
+          <input type="text" 
+                 [(ngModel)]="formData.account_number" 
+                 name="account_number" 
+                 (input)="onAccountNumberInput($event)">
+          <small class="field-hint">רק מספרים</small>
+        </div>
+      </div>
     </div>
 
     <!-- שדות לשיקים פיזיים -->
-    <div class="form-group" *ngIf="checkForm.is_physical">
+    <div class="form-group" *ngIf="formData.is_physical">
       <label>{{ checkType === 'outgoing' ? 'שם המוטב' : 'שם המשלם' }}:</label>
       <input type="text" 
-             [(ngModel)]="checkForm[checkType === 'outgoing' ? 'payee_name' : 'payer_name']" 
-             [name]="checkType === 'outgoing' ? 'payee_name' : 'payer_name'" 
-             required>
+             [(ngModel)]="formData.payee_name" 
+             name="payee_name">
     </div>
 
     <div class="form-group">
       <label>סכום (₪):</label>
-      <input type="number" 
-             [(ngModel)]="checkForm.amount" 
+      <input type="text" 
+             [(ngModel)]="formData.amount" 
              name="amount" 
-             step="0.01" 
-             min="0.01" 
-             required>
-    </div>
-
-    <div class="form-row">
-      <!-- תאריך הנפקה - רק לשקים דיגיטליים -->
-      <div class="form-group" *ngIf="!checkForm.is_physical">
-        <label>תאריך הנפקה:</label>
-        <input type="date" 
-               [(ngModel)]="checkForm.issue_date" 
-               name="issue_date" 
-               required>
-      </div>
-
-      <div class="form-group">
-        <label>תאריך פירעון:</label>
-        <input type="date" 
-               [(ngModel)]="checkForm.due_date" 
-               name="due_date" 
-               required>
-      </div>
+             (input)="onAmountInput($event)">
     </div>
 
     <div class="form-group">
-      <label class="checkbox-label">
-        <input type="checkbox" 
-               [(ngModel)]="checkForm.is_physical" 
-               name="is_physical">
-        <span>שק פיזי (אפשרות העלאת תמונה)</span>
-      </label>
+      <label>תאריך פירעון:</label>
+      <input type="date" 
+             [(ngModel)]="formData.due_date" 
+             name="due_date" 
+             [min]="todayDate">
     </div>
 
-    <!-- שדות נוספים לשיקים פיזיים -->
-    <div *ngIf="checkForm.is_physical" class="physical-check-fields">
-      <div class="form-row">
-        <div class="form-group">
-          <label>שם הבנק:</label>
-          <input type="text" 
-                 [(ngModel)]="checkForm.bank_name" 
-                 name="bank_name" 
-                 placeholder="לדוגמה: בנק הפועלים">
-        </div>
-        
-        <div class="form-group">
-          <label>מספר סניף:</label>
-          <input type="text" 
-                 [(ngModel)]="checkForm.bank_branch" 
-                 name="bank_branch" 
-                 placeholder="לדוגמה: 123">
-        </div>
-      </div>
-    </div>
 
     <div *ngIf="checkType === 'incoming'" class="form-group">
       <label class="checkbox-label">
         <input type="checkbox" 
-               [(ngModel)]="checkForm.deposit_immediately" 
+               [(ngModel)]="formData.deposit_immediately" 
                name="deposit_immediately">
         <span>הפקד מיד</span>
       </label>
@@ -183,85 +150,43 @@
 
     <div class="form-group">
       <label>הערות:</label>
-      <textarea [(ngModel)]="checkForm.notes" 
+      <textarea [(ngModel)]="formData.notes" 
                 name="notes" 
                 rows="3" 
                 placeholder="הערות נוספות..."></textarea>
     </div>
 
-    <div class="form-actions">
-      <button type="button" 
-              class="btn btn-secondary" 
-              (click)="cancel()">
-        ביטול
-      </button>
-      <button type="submit" 
-              class="btn btn-primary" 
-              [disabled]="loading">
-        {{ loading ? 'יוצר...' : 'צור שק' }}
-      </button>
-    </div>
-  </form>
-
-  <!-- טופס סדרת שקים -->
-  <form *ngIf="isSeries" (ngSubmit)="onSubmit()" class="series-form">
-    <h3>פרטי הסדרה</h3>
-    
+    <!-- checkbox סדרת שיקים -->
     <div class="form-group">
-      <label>{{ checkType === 'outgoing' ? 'מוטב' : 'משלם' }}:</label>
-      <select [(ngModel)]="seriesForm.contact_id" name="contact_id" required>
-        <option value="">בחר איש קשר</option>
-        <option *ngFor="let contact of contacts" [value]="contact.id">
-          {{ contact.name }} - {{ contact.phone }}
-        </option>
-      </select>
+      <label class="checkbox-label">
+        <input type="checkbox" 
+               [(ngModel)]="isSeries" 
+               name="isSeries"
+               (change)="onSeriesToggle()">
+        <span>סדרת שיקים</span>
+      </label>
     </div>
 
-    <div class="form-group">
-      <label>סכום כל שק (₪):</label>
-      <input type="number" 
-             [(ngModel)]="seriesForm.amount" 
-             name="amount" 
-             step="0.01" 
-             min="0.01" 
-             required>
-    </div>
-
-    <div class="form-row">
-      <div class="form-group">
-        <label>יום בחודש (1-31):</label>
-        <input type="number" 
-               [(ngModel)]="seriesForm.day_of_month" 
-               name="day_of_month" 
-               min="1" 
-               max="31" 
-               required>
+    <!-- שדות סדרת שיקים -->
+    <div *ngIf="isSeries" class="series-fields">
+      <div class="form-row">
+        <div class="form-group">
+          <label>מספר שקים בסדרה:</label>
+          <input type="number" 
+                 [(ngModel)]="seriesForm.total_checks" 
+                 name="total_checks" 
+                 min="2" 
+                 max="24">
+        </div>
+        <div class="form-group">
+          <label>יום בחודש (1-31):</label>
+          <input type="number" 
+                 [(ngModel)]="seriesForm.day_of_month" 
+                 name="day_of_month" 
+                 min="1" 
+                 max="31">
+        </div>
       </div>
-
-      <div class="form-group">
-        <label>מספר שקים (2-24):</label>
-        <input type="number" 
-               [(ngModel)]="seriesForm.total_checks" 
-               name="total_checks" 
-               min="2" 
-               max="24" 
-               required>
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label>חודש התחלה:</label>
-      <input type="date" 
-             [(ngModel)]="seriesForm.start_month" 
-             name="start_month" 
-             required>
-    </div>
-
-    <div class="series-info" *ngIf="seriesForm.total_checks && seriesForm.amount">
-      <p>
-        יווצרו {{ seriesForm.total_checks }} שקים בסך {{ formatAmount(seriesForm.amount ? parseFloat(seriesForm.amount) : 0) }} כל אחד
-        החל מ-{{ formatDate(seriesForm.start_month) }} בכל יום {{ seriesForm.day_of_month }} של החודש
-      </p>
     </div>
 
     <div class="form-actions">
@@ -273,8 +198,9 @@
       <button type="submit" 
               class="btn btn-primary" 
               [disabled]="loading">
-        {{ loading ? 'יוצר...' : 'צור סדרת שקים' }}
+        {{ loading ? 'יוצר...' : (isSeries ? 'צור סדרה' : 'צור שק') }}
       </button>
     </div>
   </form>
+
 </div>
