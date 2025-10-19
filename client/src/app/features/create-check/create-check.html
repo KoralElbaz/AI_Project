@@ -43,8 +43,7 @@
              [(ngModel)]="formData.payee_name" 
              name="payee_name" 
              (input)="onPayeeNameInput($event)"
-             maxlength="50">
-      <small class="field-hint">רק אותיות עברית/אנגלית, רווחים ו-"-"</small>
+>
     </div>
 
     <!-- פרטים נוספים -->
@@ -54,8 +53,7 @@
              [(ngModel)]="formData.id_number" 
              name="id_number" 
              (input)="onIdNumberInput($event)"
-             maxlength="9">
-      <small class="field-hint">לפחות 5 ספרות</small>
+>
     </div>
 
     <!-- כפתורי רדיו -->
@@ -88,8 +86,7 @@
              [(ngModel)]="formData.phone" 
              name="phone" 
              (input)="onPhoneInput($event)"
-             maxlength="12">
-      <small class="field-hint">רק מספרים</small>
+>
     </div>
 
     <!-- שדות סניף ומספר חשבון -->
@@ -101,7 +98,6 @@
                  [(ngModel)]="formData.bank_branch" 
                  name="bank_branch" 
                  (input)="onBankBranchInput($event)">
-          <small class="field-hint">רק מספרים</small>
         </div>
         <div class="form-group">
           <label>מספר חשבון:</label>
@@ -109,7 +105,6 @@
                  [(ngModel)]="formData.account_number" 
                  name="account_number" 
                  (input)="onAccountNumberInput($event)">
-          <small class="field-hint">רק מספרים</small>
         </div>
       </div>
     </div>
@@ -135,7 +130,7 @@
       <input type="date" 
              [(ngModel)]="formData.due_date" 
              name="due_date" 
-             [min]="todayDate">
+>
     </div>
 
 
@@ -175,16 +170,14 @@
           <input type="number" 
                  [(ngModel)]="seriesForm.total_checks" 
                  name="total_checks" 
-                 min="2" 
-                 max="24">
+>
         </div>
         <div class="form-group">
           <label>יום בחודש (1-31):</label>
           <input type="number" 
                  [(ngModel)]="seriesForm.day_of_month" 
                  name="day_of_month" 
-                 min="1" 
-                 max="31">
+>
         </div>
       </div>
     </div>

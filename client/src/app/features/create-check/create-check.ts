@@ -105,68 +105,33 @@ export class CreateCheckComponent implements OnInit {
     this.checkType = 'outgoing';
   }
 
-  // פונקציות לטיפול בשדות
+  // פונקציות לטיפול בשדות - ללא ולידציות
   onCheckNumberInput(event: any) {
-    const value = event.target.value;
-    // רק מספרים
-    const numbersOnly = value.replace(/[^0-9]/g, '');
-    this.formData.check_number = numbersOnly;
+    this.formData.check_number = event.target.value;
   }
 
   onPayeeNameInput(event: any) {
-    const value = event.target.value;
-    // רק עברית, אנגלית, רווח ו-
-    const validChars = value.replace(/[^א-תa-zA-Z\s\-]/g, '');
-    this.formData.payee_name = validChars;
+    this.formData.payee_name = event.target.value;
   }
 
   onIdNumberInput(event: any) {
-    const value = event.target.value;
-    // רק מספרים, מקסימום 9 ספרות
-    const numbersOnly = value.replace(/[^0-9]/g, '').substring(0, 9);
-    this.formData.id_number = numbersOnly;
+    this.formData.id_number = event.target.value;
   }
 
   onPhoneInput(event: any) {
-    const value = event.target.value;
-    // רק מספרים
-    const numbersOnly = value.replace(/[^0-9]/g, '');
-    
-    // פורמט אוטומטי
-    let formatted = numbersOnly;
-    if (numbersOnly.length > 3) {
-      formatted = numbersOnly.substring(0, 3) + '-' + numbersOnly.substring(3);
-    }
-    
-    this.formData.phone = formatted;
+    this.formData.phone = event.target.value;
   }
 
   onBankBranchInput(event: any) {
-    const value = event.target.value;
-    // רק מספרים
-    const numbersOnly = value.replace(/[^0-9]/g, '');
-    this.formData.bank_branch = numbersOnly;
+    this.formData.bank_branch = event.target.value;
   }
 
   onAccountNumberInput(event: any) {
-    const value = event.target.value;
-    // רק מספרים
-    const numbersOnly = value.replace(/[^0-9]/g, '');
-    this.formData.account_number = numbersOnly;
+    this.formData.account_number = event.target.value;
   }
 
   onAmountInput(event: any) {
-    const value = event.target.value;
-    // רק מספרים ונקודה
-    const validChars = value.replace(/[^0-9.]/g, '');
-    
-    // פורמט עם פסיקים
-    const parts = validChars.split('.');
-    if (parts[0]) {
-      parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    }
-    
-    this.formData.amount = parts.join('.');
+    this.formData.amount = event.target.value;
   }
 
   onIdentifierTypeChange() {
@@ -239,23 +204,18 @@ export class CreateCheckComponent implements OnInit {
 
 
   validateForm(): boolean {
-    if (this.isSeries) {
-      return this.validateSeriesForm();
-    } else {
-      return this.validateSingleCheckForm();
-    }
+    // ללא ולידציות - תמיד true
+    return true;
   }
 
   validateSingleCheckForm(): boolean {
-    // ולידציה מינימלית - רק בדיקה בסיסית
-    console.log('Form data:', this.formData);
-    return true; // תמיד true - ללא ולידציה
+    // ללא ולידציות - תמיד true
+    return true;
   }
 
   validateSeriesForm(): boolean {
-    // ולידציה מינימלית - רק בדיקה בסיסית
-    console.log('Series form data:', this.seriesForm);
-    return true; // תמיד true - ללא ולידציה
+    // ללא ולידציות - תמיד true
+    return true;
   }
 
   onSubmit() {
@@ -286,15 +246,18 @@ export class CreateCheckComponent implements OnInit {
       phone: this.formData.phone,
       bank_branch: this.formData.bank_branch,
       account_number: this.formData.account_number,
-      amount: parseFloat(this.formData.amount.replace(/,/g, '')),
+      amount: this.formData.amount ? parseFloat(this.formData.amount.replace(/,/g, '')) || 0 : 0,
       issue_date: new Date().toISOString().split('T')[0],
       due_date: this.formData.due_date,
       is_physical: false,
       notes: this.formData.notes
     };
 
+    console.log('Sending check data:', checkData);
+    
     this.outgoingChecksService.createCheck(checkData).subscribe({
       next: (response) => {
+        console.log('Check created successfully:', response);
         this.success = 'שק יוצא נוצר בהצלחה';
         this.loading = false;
         setTimeout(() => {
@@ -302,6 +265,8 @@ export class CreateCheckComponent implements OnInit {
         }, 2000);
       },
       error: (err) => {
+        console.error('Error creating check:', err);
+        console.error('Error details:', err.error);
         this.error = err.error?.error || 'שגיאה ביצירת השק';
         this.loading = false;
       }

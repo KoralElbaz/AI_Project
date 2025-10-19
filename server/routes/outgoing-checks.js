@@ -9,12 +9,12 @@ router.get('/', (req, res) => {
   let query = `
     SELECT 
       oc.*,
-      c.name as payee_name,
-      c.phone as payee_phone,
-      c.email as payee_email,
-      c.bank_name,
-      c.bank_branch,
-      c.account_number
+      COALESCE(c.name, oc.payee_name) as payee_name,
+      COALESCE(c.phone, '') as payee_phone,
+      COALESCE(c.email, '') as payee_email,
+      COALESCE(c.bank_name, oc.bank_name) as bank_name,
+      COALESCE(c.bank_branch, oc.bank_branch) as bank_branch,
+      COALESCE(c.account_number, '') as account_number
     FROM outgoing_checks oc
     LEFT JOIN contacts c ON oc.payee_contact_id = c.id
     WHERE 1=1
@@ -92,13 +92,13 @@ router.get('/:id', (req, res) => {
   const query = `
     SELECT 
       oc.*,
-      c.name as payee_name,
-      c.phone as payee_phone,
-      c.email as payee_email,
-      c.bank_name,
-      c.bank_branch,
-      c.account_number,
-      c.proxy
+      COALESCE(c.name, oc.payee_name) as payee_name,
+      COALESCE(c.phone, '') as payee_phone,
+      COALESCE(c.email, '') as payee_email,
+      COALESCE(c.bank_name, oc.bank_name) as bank_name,
+      COALESCE(c.bank_branch, oc.bank_branch) as bank_branch,
+      COALESCE(c.account_number, '') as account_number,
+      COALESCE(c.proxy, '') as proxy
     FROM outgoing_checks oc
     LEFT JOIN contacts c ON oc.payee_contact_id = c.id
     WHERE oc.id = ?
@@ -120,25 +120,9 @@ router.get('/:id', (req, res) => {
 
 // POST /api/outgoing-checks - יצירת שק יוצא בודד
 router.post('/', (req, res) => {
-  const { check_number, payee_contact_id, amount, issue_date, due_date, is_physical, notes } = req.body;
+  const { check_number, payee_name, id_number, identifier_type, phone, bank_branch, account_number, amount, issue_date, due_date, is_physical, notes } = req.body;
   
-  // ולידציות
-  // if (!check_number || !payee_contact_id || !amount || !issue_date || !due_date) {
-  //   return res.status(400).json({ error: 'כל השדות החובה נדרשים' });
-  // }
-  
-  // בדיקה שמספר השק מכיל רק מספרים
-  if (!/^[0-9]+$/.test(check_number)) {
-    return res.status(400).json({ error: 'מספר השק חייב להכיל רק ספרות' });
-  }
-  
-  if (amount <= 0) {
-    return res.status(400).json({ error: 'הסכום חייב להיות גדול מ-0' });
-  }
-  
-  if (new Date(due_date) < new Date(issue_date)) {
-    return res.status(400).json({ error: 'תאריך הפירעון חייב להיות אחרי תאריך ההנפקה' });
-  }
+  // ללא ולידציות - כל השדות מתקבלים
   
   // בדיקה שמספר השק ייחודי
   db.get('SELECT id FROM outgoing_checks WHERE check_number = ?', [check_number], (err, row) => {
@@ -154,11 +138,11 @@ router.post('/', (req, res) => {
     // יצירת השק
     const query = `
       INSERT INTO outgoing_checks 
-      (check_number, payee_contact_id, amount, currency, issue_date, due_date, is_physical, notes)
-      VALUES (?, ?, ?, 'ILS', ?, ?, ?, ?)
+      (check_number, payee_contact_id, payee_name, amount, currency, issue_date, due_date, is_physical, notes)
+      VALUES (?, NULL, ?, ?, 'ILS', ?, ?, ?, ?)
     `;
     
-    db.run(query, [check_number, payee_contact_id, amount, issue_date, due_date, is_physical || 0, notes], function(err) {
+    db.run(query, [check_number, payee_name, amount, issue_date, due_date, is_physical || 0, notes], function(err) {
       if (err) {
         console.error('Error creating outgoing check:', err);
         return res.status(500).json({ error: 'שגיאה ביצירת השק' });
@@ -179,12 +163,9 @@ router.post('/', (req, res) => {
 
 // POST /api/outgoing-checks/series - יצירת סדרת שקים
 router.post('/series', (req, res) => {
-  const { payee_contact_id, amount, day_of_month, total_checks, start_month, check_book_id } = req.body;
+  const { payee_name, id_number, identifier_type, phone, bank_branch, account_number, amount, day_of_month, total_checks, start_month, check_book_id } = req.body;
   
-  // ולידציות
-  // if (!payee_contact_id || !amount || !day_of_month || !total_checks || !start_month) {
-  //   return res.status(400).json({ error: 'כל השדות החובה נדרשים' });
-  // }
+  // ולידציות מינימליות - רק בדיקות חשובות
   
   if (total_checks < 2 || total_checks > 24) {
     return res.status(400).json({ error: 'מספר השקים חייב להיות בין 2-24' });
@@ -194,18 +175,14 @@ router.post('/series', (req, res) => {
     return res.status(400).json({ error: 'יום בחודש חייב להיות בין 1-31' });
   }
   
-  if (amount <= 0) {
-    return res.status(400).json({ error: 'הסכום חייב להיות גדול מ-0' });
-  }
-  
   // יצירת הסדרה
   const seriesQuery = `
     INSERT INTO outgoing_series 
     (payee_contact_id, amount, day_of_month, total_checks)
-    VALUES (?, ?, ?, ?)
+    VALUES (NULL, ?, ?, ?)
   `;
   
-  db.run(seriesQuery, [payee_contact_id, amount, day_of_month, total_checks], function(err) {
+  db.run(seriesQuery, [amount, day_of_month, total_checks], function(err) {
     if (err) {
       console.error('Error creating outgoing series:', err);
       return res.status(500).json({ error: 'שגיאה ביצירת סדרת השקים' });

@@ -1,41 +1,4 @@
 <div class="dashboard-container">
-  <!-- Header -->
-  <header class="dashboard-header">
-    <div class="header-content">
-      <div class="logo-section">
-        <h1 class="main-title">ניהול שקים</h1>
-        <div class="divider"></div>
-        <div class="discount-logo">דיסקונט</div>
-      </div>
-      
-      <div class="header-actions">
-        <button class="icon-btn" title="חיפוש">
-          <span class="icon">🔍</span>
-        </button>
-        <button class="icon-btn notification-btn" title="התראות">
-          <span class="icon">🔔</span>
-          <span class="notification-dot"></span>
-        </button>
-        <button class="icon-btn notification-btn" title="הודעות">
-          <span class="icon">📧</span>
-          <span class="notification-dot"></span>
-        </button>
-        <button class="icon-btn" title="הגדרות">
-          <span class="icon">⚙️</span>
-        </button>
-        <button class="icon-btn" title="נגישות">
-          <span class="icon">♿</span>
-        </button>
-        <button class="icon-btn" title="שירות לקוחות">
-          <span class="icon">💬</span>
-        </button>
-        <button class="logout-btn" (click)="logout()">
-          יציאה ←
-        </button>
-      </div>
-    </div>
-  </header>
-
   <div class="dashboard-layout">
     <!-- Sidebar -->
     <aside class="sidebar">
@@ -64,26 +27,6 @@
             <span class="menu-icon">✏️</span>
             <span class="menu-text">כתיבת שיק דיגיטלי חדש</span>
           </div>
-          <div class="menu-item">
-            <span class="menu-icon">📋</span>
-            <span class="menu-text">חומת פנקסי שיקים</span>
-          </div>
-          <div class="menu-item">
-            <span class="menu-icon">🔄</span>
-            <span class="menu-text">הפעלה פנקסי שיקים</span>
-          </div>
-          <div class="menu-item">
-            <span class="menu-icon">❌</span>
-            <span class="menu-text">ביטול פנקסי שיקים שהוזמנו</span>
-          </div>
-          <div class="menu-item">
-            <span class="menu-icon">🚫</span>
-            <span class="menu-text">ביטול שיקים</span>
-          </div>
-          <div class="menu-item">
-            <span class="menu-icon">📊</span>
-            <span class="menu-text">משיכת שיקים דחויים</span>
-          </div>
         </div>
       </div>
     </aside>
@@ -93,36 +36,16 @@
       <!-- Account Selector -->
       <div class="account-selector">
         <div class="account-info">
-          <div class="account-dropdown">
-            <select class="account-select">
-              <option value="1">0136816225 פמח דבור קק בע"מ</option>
-            </select>
+          <div class="account-name">
+            0136816225 פמח דבור קק בע"מ
           </div>
           <div class="balance-info">
-            <div class="balance-label">יתרה כוללת (תעודות כולל מנגנון)</div>
+            <div class="balance-label">יתרה בחשבון</div>
             <div class="balance-amount">1,060,685,996.00 ₪</div>
-            <a href="#" class="credit-link">מסגרת אשראי</a>
           </div>
         </div>
       </div>
 
-      <!-- Filters Bar -->
-      <div class="filters-bar">
-        <div class="filter-left">
-          <button class="filter-btn active">פירוט</button>
-          <button class="filter-btn">ריכוז</button>
-        </div>
-        <div class="filter-right">
-          <button class="filter-btn secondary">
-            <span class="icon">🔍</span>
-            חיפוש מתקדם
-          </button>
-          <button class="filter-btn primary">
-            <span class="icon">📥</span>
-            שמירה והדפסה
-          </button>
-        </div>
-      </div>
 
       <!-- Loading State -->
       <div class="loading-container" *ngIf="isLoading">
@@ -149,7 +72,6 @@
               <h2>שיקים יוצאים</h2>
               <span class="arrow">→</span>
             </div>
-            <p class="section-subtitle">(תשלומים לספקים)</p>
           </div>
 
           <div class="stats-grid">
@@ -167,7 +89,7 @@
               <div class="stat-icon">⚠️</div>
               <div class="stat-content">
                 <div class="stat-value">{{ formatNumber(stats.outgoing.due_this_week) }}</div>
-                <div class="stat-label">דורשים תשומת לב</div>
+                <div class="stat-label">שיקים שיפרעו בשבוע הקרוב</div>
               </div>
             </div>
 
@@ -176,7 +98,7 @@
               <div class="stat-icon">📅</div>
               <div class="stat-content">
                 <div class="stat-value">{{ formatNumber(stats.outgoing.due_this_month) }}</div>
-                <div class="stat-label">תזרים צפוי</div>
+                <div class="stat-label">שיקים שיפרעו בחודש הקרוב</div>
               </div>
             </div>
 
@@ -223,7 +145,6 @@
               <h2>שיקים נכנסים</h2>
               <span class="arrow">→</span>
             </div>
-            <p class="section-subtitle">(תשלומים מלקוחות)</p>
           </div>
 
           <div class="stats-grid">

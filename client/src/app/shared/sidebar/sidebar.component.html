@@ -1,0 +1,30 @@
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar-content">
+    <!-- מידע -->
+    <div class="menu-category">
+      <div class="category-header">מידע</div>
+      <div class="menu-item" (click)="navigateToDashboard()">
+        <span class="menu-icon">🏠</span>
+        <span class="menu-text">לובי שקים</span>
+      </div>
+      <div class="menu-item" (click)="navigateToIncomingChecks()">
+        <span class="menu-icon">📥</span>
+        <span class="menu-text">שקים נכנסים</span>
+      </div>
+      <div class="menu-item" (click)="navigateToOutgoingChecks()">
+        <span class="menu-icon">📤</span>
+        <span class="menu-text">שקים יוצאים</span>
+      </div>
+    </div>
+
+    <!-- פעולות -->
+    <div class="menu-category">
+      <div class="category-header">פעולות</div>
+      <div class="menu-item" (click)="navigateToCreateCheck()">
+        <span class="menu-icon">✏️</span>
+        <span class="menu-text">יצירת שיק דיגיטלי</span>
+      </div>
+    </div>
+  </div>
+</aside>
