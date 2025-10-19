@@ -4,8 +4,8 @@
     <button class="btn btn-secondary" (click)="cancel()">חזור</button>
   </div>
 
-  <!-- בחירת סוג שק -->
-  <div class="check-type-selection">
+  <!-- בחירת סוג שק - רק שיקים יוצאים -->
+  <div class="check-type-selection" *ngIf="checkForm.is_physical">
     <h3>סוג שק</h3>
     <div class="type-options">
       <label class="type-option">
