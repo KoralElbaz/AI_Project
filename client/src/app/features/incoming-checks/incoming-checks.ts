@@ -47,7 +47,7 @@ export class IncomingChecksComponent implements OnInit {
   loading = false;
   error = '';
   selectedCheck: IncomingCheck | null = null;
-  showModal = false;
+  expandedRowId: number | null = null;
   
   // פילטרים
   filters = {
@@ -135,15 +135,19 @@ export class IncomingChecksComponent implements OnInit {
     this.router.navigate(['/create-check']);
   }
 
-  // Modal
-  openCheckModal(check: IncomingCheck) {
-    this.selectedCheck = check;
-    this.showModal = true;
+  // Drawer
+  toggleRowExpansion(check: IncomingCheck) {
+    if (this.expandedRowId === check.id) {
+      this.expandedRowId = null;
+      this.selectedCheck = null;
+    } else {
+      this.expandedRowId = check.id;
+      this.selectedCheck = check;
+    }
   }
 
-  closeModal() {
-    this.showModal = false;
-    this.selectedCheck = null;
+  isRowExpanded(check: IncomingCheck): boolean {
+    return this.expandedRowId === check.id;
   }
 
   // פעולות על שק
@@ -169,7 +173,7 @@ export class IncomingChecksComponent implements OnInit {
     });
   }
 
-  depositCheck() {
+  depositCheck(type: 'immediate' | 'scheduled' = 'immediate') {
     if (!this.selectedCheck) return;
     
     if (this.selectedCheck.status !== 'waiting_deposit') {
@@ -177,40 +181,39 @@ export class IncomingChecksComponent implements OnInit {
       return;
     }
 
-    this.http.put(`http://localhost:3000/api/incoming-checks/${this.selectedCheck.id}/deposit`, {}).subscribe({
-      next: () => {
-        this.selectedCheck!.status = 'deposited';
-        this.selectedCheck!.deposited_at = new Date().toISOString();
-        this.loadChecks(); // רענון הרשימה
-        alert('השק הופקד בהצלחה');
-      },
-      error: (err) => {
-        alert('שגיאה בהפקדת השק');
-        console.error('Error depositing check:', err);
-      }
-    });
+    if (type === 'immediate') {
+      this.http.put(`http://localhost:3000/api/incoming-checks/${this.selectedCheck.id}/deposit`, {}).subscribe({
+        next: () => {
+          this.selectedCheck!.status = 'deposited';
+          this.selectedCheck!.deposited_at = new Date().toISOString();
+          this.loadChecks(); // רענון הרשימה
+          alert('השק הופקד בהצלחה');
+        },
+        error: (err) => {
+          alert('שגיאה בהפקדת השק');
+          console.error('Error depositing check:', err);
+        }
+      });
+    } else {
+      const depositDate = prompt('תאריך הפקדה (YYYY-MM-DD):');
+      if (!depositDate) return;
+
+      this.http.put(`http://localhost:3000/api/incoming-checks/${this.selectedCheck.id}/schedule-deposit`, {
+        deposit_date: depositDate
+      }).subscribe({
+        next: () => {
+          this.selectedCheck!.deposit_scheduled_date = depositDate;
+          this.loadChecks(); // רענון הרשימה
+          alert('הפקדה מתוזמנת בהצלחה');
+        },
+        error: (err) => {
+          alert('שגיאה בתזמון ההפקדה');
+          console.error('Error scheduling deposit:', err);
+        }
+      });
+    }
   }
 
-  scheduleDeposit() {
-    if (!this.selectedCheck) return;
-    
-    const depositDate = prompt('תאריך הפקדה (YYYY-MM-DD):');
-    if (!depositDate) return;
-
-    this.http.put(`http://localhost:3000/api/incoming-checks/${this.selectedCheck.id}/schedule-deposit`, {
-      deposit_date: depositDate
-    }).subscribe({
-      next: () => {
-        this.selectedCheck!.deposit_scheduled_date = depositDate;
-        this.loadChecks(); // רענון הרשימה
-        alert('הפקדה מתוזמנת בהצלחה');
-      },
-      error: (err) => {
-        alert('שגיאה בתזמון ההפקדה');
-        console.error('Error scheduling deposit:', err);
-      }
-    });
-  }
 
   // פורמט
   getStatusLabel(status: string): string {

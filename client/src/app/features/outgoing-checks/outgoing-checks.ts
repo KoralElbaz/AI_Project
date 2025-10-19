@@ -43,7 +43,7 @@ export class OutgoingChecksComponent implements OnInit {
   loading = false;
   error = '';
   selectedCheck: OutgoingCheck | null = null;
-  showModal = false;
+  expandedRowId: number | null = null;
   
   // פילטרים
   filters = {
@@ -131,15 +131,19 @@ export class OutgoingChecksComponent implements OnInit {
     this.router.navigate(['/create-check']);
   }
 
-  // Modal
-  openCheckModal(check: OutgoingCheck) {
-    this.selectedCheck = check;
-    this.showModal = true;
+  // Drawer
+  toggleRowExpansion(check: OutgoingCheck) {
+    if (this.expandedRowId === check.id) {
+      this.expandedRowId = null;
+      this.selectedCheck = null;
+    } else {
+      this.expandedRowId = check.id;
+      this.selectedCheck = check;
+    }
   }
 
-  closeModal() {
-    this.showModal = false;
-    this.selectedCheck = null;
+  isRowExpanded(check: OutgoingCheck): boolean {
+    return this.expandedRowId === check.id;
   }
 
   // פעולות על שק

@@ -19,6 +19,14 @@
     </div>
   </header>
 
+  <!-- Top Controls -->
+  <div class="top-controls">
+    <div class="save-print-btn">
+      <span class="save-icon">📤</span>
+      <span>שמירה והדפסה</span>
+    </div>
+  </div>
+
   <!-- Filters -->
   <div class="filters-section">
     <div class="filters-row">
@@ -90,25 +98,95 @@
         </tr>
       </thead>
       <tbody>
-        <tr 
-          *ngFor="let check of checks" 
-          class="check-row"
-          [ngClass]="getRowClass(check)"
-          (click)="openCheckModal(check)">
-          <td class="due-date">{{ formatDate(check.due_date) }}</td>
-          <td class="amount">{{ formatAmount(check.amount) }}</td>
-          <td class="payer-name">{{ check.payer_name || 'לא זמין' }}</td>
-          <td class="status">
-            <span class="status-badge" [ngClass]="getStatusClass(check.status)">
-              {{ getStatusLabel(check.status) }}
-            </span>
-          </td>
-          <td class="marks">
-            <span *ngFor="let mark of getCheckMarks(check); let last = last">
-              {{ mark }}<span *ngIf="!last"> · </span>
-            </span>
-          </td>
-        </tr>
+        <ng-container *ngFor="let check of checks">
+          <tr 
+            class="check-row"
+            [ngClass]="getRowClass(check)"
+            (click)="toggleRowExpansion(check)">
+            <td class="due-date">{{ formatDate(check.due_date) }}</td>
+            <td class="amount">{{ formatAmount(check.amount) }}</td>
+            <td class="payer-name">{{ check.payer_name || 'לא זמין' }}</td>
+            <td class="status">
+              <span class="status-badge" [ngClass]="getStatusClass(check.status)">
+                {{ getStatusLabel(check.status) }}
+              </span>
+            </td>
+            <td class="marks">
+              <span *ngFor="let mark of getCheckMarks(check); let last = last">
+                {{ mark }}<span *ngIf="!last"> · </span>
+              </span>
+            </td>
+          </tr>
+          
+          <!-- Expanded Row Drawer -->
+          <tr *ngIf="isRowExpanded(check)" class="expanded-row">
+            <td colspan="5" class="drawer-content">
+              <div class="drawer-header">
+                <h3>פרטי שק נכנס</h3>
+                <button class="close-drawer-btn" (click)="toggleRowExpansion(check)">×</button>
+              </div>
+              
+              <div class="drawer-body">
+                <!-- Check Visual -->
+                <div class="check-visual">
+                  <div class="check-header">
+                    <div class="bank-name">שק בנק</div>
+                    <div class="bank-name-en">Bank Check</div>
+                  </div>
+                  
+                  <div class="check-details">
+                    <div class="check-field">
+                      <label>בנק:</label>
+                      <span>{{ check.bank_name || 'הפועלים' }}</span>
+                    </div>
+                    <div class="check-field">
+                      <label>סניף:</label>
+                      <span>{{ check.bank_branch || '123' }}</span>
+                    </div>
+                    <div class="check-field">
+                      <label>תאריך:</label>
+                      <span>{{ formatDate(check.due_date) }}</span>
+                    </div>
+                    <div class="check-field">
+                      <label>משלם:</label>
+                      <span class="payer-name-large">{{ check.payer_name || 'לא זמין' }}</span>
+                    </div>
+                    <div class="amount-section">
+                      <div class="amount-label">סכום:</div>
+                      <div class="amount-value">{{ formatAmount(check.amount) }}</div>
+                    </div>
+                    <div class="check-field">
+                      <label>מספר שק:</label>
+                      <span>{{ check.check_number }}</span>
+                    </div>
+                    <div class="check-type">
+                      <span class="type-badge" [ngClass]="check.is_physical ? 'physical' : 'digital'">
+                        {{ check.is_physical ? '📄 שק פיזי' : '💻 שק דיגיטלי' }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="drawer-actions">
+                  <h4>פעולות</h4>
+                  
+                  <button class="action-btn invoice-btn" (click)="issueInvoice()">
+                    📄 הוצאת חשבונית
+                  </button>
+                  
+                  <button class="action-btn deposit-btn" (click)="depositCheck('immediate')">
+                    💰 הפקדה מיידית
+                  </button>
+                  
+                  <button class="action-btn schedule-btn" (click)="depositCheck('scheduled')">
+                    📅 הפקדה מתוזמנת
+                  </button>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </ng-container>
       </tbody>
     </table>
 
@@ -123,76 +201,4 @@
     </div>
   </div>
 
-  <!-- Check Details Modal -->
-  <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h2>פרטי שק נכנס</h2>
-        <button class="close-btn" (click)="closeModal()">×</button>
-      </div>
-      
-      <div class="modal-body" *ngIf="selectedCheck">
-        <!-- Check Visual -->
-        <div class="check-visual">
-          <div class="check-header">
-            <div class="bank-name">שק בנק</div>
-            <div class="bank-name-en">Bank Check</div>
-          </div>
-          
-          <div class="check-details">
-            <div class="check-field">
-              <label>בנק:</label>
-              <span>{{ selectedCheck.bank_name || 'הפועלים' }}</span>
-            </div>
-            <div class="check-field">
-              <label>סניף:</label>
-              <span>{{ selectedCheck.bank_branch || '123' }}</span>
-            </div>
-            <div class="check-field">
-              <label>תאריך:</label>
-              <span>{{ formatDate(selectedCheck.due_date) }}</span>
-            </div>
-            <div class="check-field">
-              <label>משלם:</label>
-              <span class="payer-name-large">{{ selectedCheck.payer_name || 'לא זמין' }}</span>
-            </div>
-            <div class="amount-section">
-              <div class="amount-label">סכום:</div>
-              <div class="amount-value">{{ formatAmount(selectedCheck.amount) }}</div>
-            </div>
-            <div class="check-field">
-              <label>מספר שק:</label>
-              <span>{{ selectedCheck.check_number }}</span>
-            </div>
-            <div class="check-type">
-              <span class="type-badge" [ngClass]="selectedCheck.is_physical ? 'physical' : 'digital'">
-                {{ selectedCheck.is_physical ? '📄 שק פיזי' : '💻 שק דיגיטלי' }}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Actions -->
-        <div class="modal-actions">
-          <h3>פעולות</h3>
-          
-          <button class="action-btn invoice-btn" (click)="issueInvoice()">
-            📄 הוצאת חשבונית
-          </button>
-          
-          <button class="action-btn deposit-btn" (click)="depositCheck()">
-            💰 הפקדה מיידית
-          </button>
-          
-          <button class="action-btn schedule-btn" (click)="scheduleDeposit()">
-            📅 הפקדה מתוזמנת
-          </button>
-          
-          <button class="action-btn close-btn" (click)="closeModal()">
-            סגור
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
 </div>
