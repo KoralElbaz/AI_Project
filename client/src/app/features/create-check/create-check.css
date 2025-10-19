@@ -61,27 +61,27 @@
   display: flex;
   align-items: center;
   cursor: pointer;
-  padding: 16px 20px;
-  border: 2px solid #E5E7EB;
-  border-radius: 8px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
   transition: all 0.2s ease;
   background: white;
   margin: 0;
-  min-width: 180px;
-  justify-content: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  justify-content: flex-start;
+  position: relative;
 }
 
 .radio-group-inline .radio-option:hover {
-  border-color: #10B981;
   background: #F0FDF4;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.15);
 }
 
 .radio-group-inline .radio-option input[type="radio"] {
-  margin-left: 8px;
-  margin-right: 0;
+  margin: 0;
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 .radio-group-inline .radio-option input[type="radio"]:checked + span {
@@ -90,15 +90,15 @@
 }
 
 .radio-group-inline .radio-option:has(input[type="radio"]:checked) {
-  border-color: #10B981;
   background: #F0FDF4;
-  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.2);
 }
 
 .radio-group-inline .radio-option span {
   font-size: 14px;
   font-weight: 500;
   color: #374151;
+  flex: 1;
+  padding-left: 30px;
 }
 
 .type-option,
@@ -319,6 +319,29 @@
   background: #F0FFF4;
   color: #059669;
   border: 1px solid #BBF7D0;
+}
+
+/* Series Fields */
+.series-fields {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 16px;
+}
+
+.series-fields .form-group label {
+  color: #374151;
+  font-weight: 600;
+}
+
+/* Field Hints */
+.field-hint {
+  display: block;
+  color: #6B7280;
+  font-size: 12px;
+  margin-top: 4px;
+  font-style: italic;
 }
 
 /* Responsive */

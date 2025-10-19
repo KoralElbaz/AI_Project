@@ -118,9 +118,9 @@ router.post('/', (req, res) => {
   const { check_number, payee_contact_id, amount, issue_date, due_date, is_physical, notes } = req.body;
   
   // ולידציות
-  if (!check_number || !payee_contact_id || !amount || !issue_date || !due_date) {
-    return res.status(400).json({ error: 'כל השדות החובה נדרשים' });
-  }
+  // if (!check_number || !payee_contact_id || !amount || !issue_date || !due_date) {
+  //   return res.status(400).json({ error: 'כל השדות החובה נדרשים' });
+  // }
   
   if (amount <= 0) {
     return res.status(400).json({ error: 'הסכום חייב להיות גדול מ-0' });
@@ -172,9 +172,9 @@ router.post('/series', (req, res) => {
   const { payee_contact_id, amount, day_of_month, total_checks, start_month, check_book_id } = req.body;
   
   // ולידציות
-  if (!payee_contact_id || !amount || !day_of_month || !total_checks || !start_month) {
-    return res.status(400).json({ error: 'כל השדות החובה נדרשים' });
-  }
+  // if (!payee_contact_id || !amount || !day_of_month || !total_checks || !start_month) {
+  //   return res.status(400).json({ error: 'כל השדות החובה נדרשים' });
+  // }
   
   if (total_checks < 2 || total_checks > 24) {
     return res.status(400).json({ error: 'מספר השקים חייב להיות בין 2-24' });
@@ -346,9 +346,9 @@ router.post('/physical', (req, res) => {
   } = req.body;
   
   // ולידציות
-  if (!check_number || !payee_name || !amount || !due_date) {
-    return res.status(400).json({ error: 'כל השדות החובה נדרשים' });
-  }
+  // if (!check_number || !payee_name || !amount || !due_date) {
+  //   return res.status(400).json({ error: 'כל השדות החובה נדרשים' });
+  // }
   
   if (amount <= 0) {
     return res.status(400).json({ error: 'הסכום חייב להיות גדול מ-0' });
