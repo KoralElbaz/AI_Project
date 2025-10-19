@@ -177,7 +177,7 @@ export class CreateCheckComponent implements OnInit {
   }
 
   resetForm() {
-    this.checkForm = {
+    this.formData = {
       check_number: '',
       contact_id: '',
       amount: '',
@@ -248,7 +248,7 @@ export class CreateCheckComponent implements OnInit {
 
   validateSingleCheckForm(): boolean {
     // ולידציה מינימלית - רק בדיקה בסיסית
-    console.log('Form data:', this.checkForm);
+    console.log('Form data:', this.formData);
     return true; // תמיד true - ללא ולידציה
   }
 
@@ -263,7 +263,7 @@ export class CreateCheckComponent implements OnInit {
     this.success = '';
 
     console.log('Form submitted!');
-    console.log('Form data:', this.checkForm);
+    console.log('Form data:', this.formData);
     console.log('Is series:', this.isSeries);
 
     // עקיפת ולידציה - תמיד ממשיך
