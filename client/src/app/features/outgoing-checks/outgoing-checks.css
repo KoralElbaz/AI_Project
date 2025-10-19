@@ -290,14 +290,9 @@
   background: #F8F9FA;
 }
 
-.checks-table tbody tr.row-urgent {
-  background: #FEF2F2;
-  border-left: 4px solid #EF4444;
-}
-
-.checks-table tbody tr.row-warning {
-  background: #FFFBEB;
-  border-left: 4px solid #F59E0B;
+.checks-table tbody tr.row-digital {
+  background: #F0FFF4;
+  border-left: 4px solid #22C55E;
 }
 
 .checks-table td {
@@ -319,9 +314,63 @@
 
 /* Check Type Icons */
 .check-type {
-  width: 60px;
+  width: 80px;
   text-align: center;
   border-right: 2px solid #E0E0E0;
+}
+
+/* Table Column Widths */
+.checks-table th.check-type,
+.checks-table td.check-type {
+  width: 80px;
+  min-width: 80px;
+  max-width: 80px;
+}
+
+.checks-table th.due-date,
+.checks-table td.due-date {
+  width: 120px;
+  min-width: 120px;
+  max-width: 120px;
+}
+
+.checks-table th.amount,
+.checks-table td.amount {
+  width: 100px;
+  min-width: 100px;
+  max-width: 100px;
+}
+
+.checks-table th.payee-name,
+.checks-table td.payee-name {
+  width: 200px;
+  min-width: 200px;
+  max-width: 200px;
+}
+
+.checks-table th.status,
+.checks-table td.status {
+  width: 140px;
+  min-width: 140px;
+  max-width: 140px;
+}
+
+.status-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.expand-arrow {
+  font-size: 14px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  color: #666;
+  font-weight: bold;
+}
+
+.expand-arrow.expanded {
+  transform: rotate(180deg);
 }
 
 .type-icon {

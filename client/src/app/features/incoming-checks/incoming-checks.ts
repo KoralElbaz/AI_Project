@@ -57,7 +57,7 @@ export class IncomingChecksComponent implements OnInit {
     min_amount: '',
     max_amount: '',
     check_number: '',
-    sort: 'created_at'
+    sort: 'due_date'
   };
   
   // סטטוסים
@@ -397,12 +397,9 @@ export class IncomingChecksComponent implements OnInit {
 
   // CSS classes
   getRowClass(check: IncomingCheck): string {
-    const dueDate = new Date(check.due_date);
-    const today = new Date();
-    const weekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
-
-    if (check.status === 'waiting_deposit' && dueDate <= weekFromNow) {
-      return 'row-urgent';
+    // רק שיקים דיגיטליים יקבלו צבע ירוק בהיר
+    if (!check.is_physical) {
+      return 'row-digital';
     }
 
     return 'row-normal';

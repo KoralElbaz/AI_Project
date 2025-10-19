@@ -127,9 +127,12 @@
             <td class="amount">{{ formatAmount(check.amount) }}</td>
             <td class="payer-name">{{ check.payer_name || 'לא זמין' }}</td>
             <td class="status">
-              <span class="status-badge" [ngClass]="getStatusClass(getEffectiveStatus(check))">
-                {{ getStatusLabel(getEffectiveStatus(check)) }}
-              </span>
+              <div class="status-container">
+                <span class="status-badge" [ngClass]="getStatusClass(getEffectiveStatus(check))">
+                  {{ getStatusLabel(getEffectiveStatus(check)) }}
+                </span>
+                <span class="expand-arrow" [ngClass]="{'expanded': isRowExpanded(check)}">▼</span>
+              </div>
             </td>
           </tr>
           
