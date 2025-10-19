@@ -20,6 +20,7 @@ interface IncomingCheck {
   deposited_at?: string;
   deposit_scheduled_date?: string;
   cleared_at?: string;
+  scheduled_deposit?: boolean;
   is_series: boolean;
   series_id?: number;
   series_number?: number;
@@ -847,4 +848,5 @@ export class IncomingChecksComponent implements OnInit {
 
     return 'row-normal';
   }
+
 }

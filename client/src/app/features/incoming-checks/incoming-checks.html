@@ -9,7 +9,6 @@
       </div>
       <div class="header-center">
         <h1>שיקים נכנסים</h1>
-        <p>כל התשלומים מלקוחות</p>
       </div>
       <div class="header-right">
         <button class="create-btn" (click)="navigateToCreateCheck()">
@@ -213,15 +212,15 @@
                     🚫 ביטול הפקדה מתוזמנת
                   </button>
                   
-                  <!-- כפתורי הפקדה - רק למצב ממתין להפקדה, לא פג תוקף, דיגיטלי וזמין להפקדה -->
-                  <ng-container *ngIf="selectedCheck?.status === 'waiting_deposit' && !isCheckExpired(selectedCheck) && !selectedCheck?.is_physical && isCheckDepositable(selectedCheck)">
+                  <!-- כפתורי הפקדה - רק למצב ממתין להפקדה, לא פג תוקף, דיגיטלי -->
+                  <ng-container *ngIf="selectedCheck?.status === 'waiting_deposit' && !isCheckExpired(selectedCheck) && !selectedCheck?.is_physical">
                     <button class="action-btn deposit-btn" 
                             (click)="depositCheck('immediate')">
                       💳 הפקדת שיק
                     </button>
                     
-                    <!-- הפקדה מתוזמנת - רק אם זמין ולא קיימת כבר -->
-                    <button *ngIf="isCheckSchedulable(selectedCheck) && !hasScheduledDeposit(selectedCheck)" 
+                    <!-- הפקדה מתוזמנת - רק אם לא קיימת כבר -->
+                    <button *ngIf="!hasScheduledDeposit(selectedCheck)" 
                             class="action-btn schedule-btn" 
                             (click)="depositCheck('scheduled')">
                       📅 הפקדה מתוזמנת
