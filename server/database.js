@@ -6,6 +6,7 @@ const dbPath = path.join(__dirname, 'contacts.db');
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
     console.error('Error opening database:', err.message);
+    process.exit(1);
   } else {
     console.log('Connected to SQLite database at:', dbPath);
     initializeDatabase();
@@ -194,6 +195,7 @@ function initializeDatabase() {
       
       completedTables++;
       if (completedTables === tables.length) {
+        console.log('All tables created successfully');
         // הוספת נתונים לדוגמה אם הטבלות ריקות
         insertSampleData();
       }
@@ -324,6 +326,8 @@ function insertSampleData() {
             console.log('Sample outgoing checks inserted successfully');
           }
         });
+      } else {
+        console.log('Outgoing checks already exist, skipping sample data');
       }
     });
 
@@ -364,6 +368,8 @@ function insertSampleData() {
             console.log('Sample incoming checks inserted successfully');
           }
         });
+      } else {
+        console.log('Incoming checks already exist, skipping sample data');
       }
     });
   }, 1000); // המתנה קצרה כדי לוודא שאנשי הקשר נוספו קודם
