@@ -194,20 +194,16 @@
                 <div class="drawer-actions">
                   <h4>פעולות</h4>
                   
-                  <div *ngIf="selectedCheck?.is_physical" class="physical-check-notice">
-                    <span class="notice-icon">ℹ️</span>
-                    <span class="notice-text">שק פיזי - הוצאת חשבונית מותרת, פעולות הפקדה מוגבלות למעקב בלבד</span>
-                  </div>
+                  <!-- כפתור הדפסה - תמיד ראשון -->
+                  <button class="action-btn print-btn" (click)="printCheck()">
+                    🖨️ הדפסה
+                  </button>
                   
                   <button class="action-btn invoice-btn" 
                           (click)="issueInvoice()"
                           [disabled]="selectedCheck?.status !== 'deposited'"
                           [title]="selectedCheck?.status !== 'deposited' ? 'הוצאת חשבונית זמינה רק לשיקים שהופקדו' : ''">
                     📄 הוצאת חשבונית
-                  </button>
-                  
-                  <button class="action-btn print-btn" (click)="printCheck()">
-                    🖨️ הדפסה
                   </button>
                   
                   <!-- הודעה עבור כפתור הוצאת חשבונית -->
