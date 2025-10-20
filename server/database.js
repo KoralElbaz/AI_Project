@@ -89,7 +89,10 @@ function initializeDatabase() {
     CREATE TABLE IF NOT EXISTS incoming_checks (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       check_number TEXT NOT NULL UNIQUE,
-      payer_contact_id INTEGER NOT NULL,
+      payer_contact_id INTEGER,
+      payer_name TEXT,
+      bank_name TEXT,
+      bank_branch TEXT,
       amount DECIMAL(10,2) NOT NULL,
       currency TEXT DEFAULT 'ILS',
       issue_date DATE NOT NULL,
