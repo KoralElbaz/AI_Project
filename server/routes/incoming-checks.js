@@ -350,6 +350,32 @@ router.post('/:id/invoice', (req, res) => {
   });
 });
 
+// PUT /api/incoming-checks/:id - עדכון שיק נכנס
+router.put('/:id', (req, res) => {
+  const { id } = req.params;
+  const { check_number, payer_contact_id, payer_name, bank_name, bank_branch, amount, issue_date, due_date, notes } = req.body;
+  
+  const query = `
+    UPDATE incoming_checks 
+    SET check_number = ?, payer_contact_id = ?, payer_name = ?, bank_name = ?, bank_branch = ?, 
+        amount = ?, issue_date = ?, due_date = ?, notes = ?, updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `;
+  
+  db.run(query, [check_number, payer_contact_id, payer_name, bank_name, bank_branch, amount, issue_date, due_date, notes, id], function(err) {
+    if (err) {
+      console.error('Error updating incoming check:', err);
+      return res.status(500).json({ error: 'שגיאה בעדכון השק' });
+    }
+    
+    if (this.changes === 0) {
+      return res.status(404).json({ error: 'שק לא נמצא' });
+    }
+    
+    res.json({ message: 'השק עודכן בהצלחה' });
+  });
+});
+
 // PUT /api/incoming-checks/:id/status - עדכון סטטוס
 router.put('/:id/status', (req, res) => {
   const { id } = req.params;

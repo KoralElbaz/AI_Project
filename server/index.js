@@ -10,8 +10,15 @@ app.use(cors({
   credentials: true
 }));
 
-// Middleware לפענוח JSON
-app.use(express.json());
+// Middleware לפענוח JSON עם תמיכה ב-UTF-8
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// הגדרת Content-Type ל-UTF-8
+app.use((req, res, next) => {
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  next();
+});
 
 // Import routes
 const contactsRouter = require('./routes/contacts');
